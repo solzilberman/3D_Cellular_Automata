@@ -5,7 +5,9 @@
 #include <sstream>
 #include <iostream>
 #include <GL/glew.h>
-
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 class Shader {
  public:
   int id;
@@ -103,6 +105,10 @@ class Shader {
 
   void setMat4 (const std::string &name, float *m) const {
     glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_TRUE, m);
+  }
+
+  void setMat4 (const std::string &name, const glm::mat4 &mat) const {
+    glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
   }
 private:
   // utility function for checking shader compilation/linking errors.

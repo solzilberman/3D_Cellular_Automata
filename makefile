@@ -6,9 +6,9 @@ LINK = g++ $(CFLAGS)
 
 LFLAGS = -lGL -lGLEW -lglut
 
-main: main.cpp ./headers/Shader.h ./headers/VertexBuffer.h ./shaders/shader.vs ./shaders/shader.fs
+main: main.cpp ./headers/Shader.h ./headers/VertexBuffer.h ./headers/Objects.h ./shaders/shader.vs ./shaders/shader.fs
 	$(LINK) main.cpp $(LFLAGS) -o main
 run: main
-	./env.sh & ./main
+	. ./utilities/env.sh & ./main
 clean:
 	rm -f main main.o
