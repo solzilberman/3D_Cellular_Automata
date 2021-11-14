@@ -40,7 +40,7 @@ public:
     unsigned int side_length;
     unsigned int nv;
     unsigned int ni;
-    float cells[10][10][10];
+    float cells[20][20][20];
     VertexBuffer *vb;
     vector<float> stay_alive;
     vector<float> born;
@@ -51,6 +51,57 @@ public:
     ~Object(){
         delete[] cubes;
     };
+
+    Cube * genCubes(int side_cube) {
+        Cube *cubes = new Cube[side_cube*side_cube*side_cube];
+        vector<float> base_verts = {
+            1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0,
+            1.0, 1.0,   0, 0.0, 1.0, 0.0, 0.0,
+            1.0,   0, 1.0, 0.0, 0.0, 0.0, 0.0,
+            1.0,   0,   0, 0.0, 0.0, 1.0, 0.0,
+            0,   1.0, 1.0, 1.0, 0.0, 0.0, 0.0,
+            0,   1.0,   0, 0.0, 1.0, 0.0, 0.0,
+            0,     0, 1.0, 0.0, 0.0, 1.0, 0.0,
+            0,     0,   0, 0.0, 1.0, 0.0, 0.0,
+        };
+        vector <unsigned int> bse_inds = {
+            0, 6, 4,
+            0, 2, 6,
+            0, 3, 2,
+            0, 1, 3,
+            2, 7, 6,
+            2, 3, 7,
+            4, 6, 7,
+            4, 7, 5,
+            0, 4, 5,
+            0, 5, 1,
+            1, 5, 7,
+            1, 7, 3,
+        };
+
+        // @Function: generates cube of <num cubes> side length
+        // @Param: side_cube - num of cubes per side of big cube
+        // @Return: void
+        for(int z = 0; z < side_cube; z++){
+            for(int y = 0; y < side_cube; y++){
+                for(int x = 0; x < side_cube; x++){
+                    for(int i = 0; i < 8; i++){
+                        cubes[z*side_cube*side_cube + y*side_cube + x].vertices[i] = glm::vec3(base_verts[i*7]+float(x), base_verts[i*7 + 1]+float(y), base_verts[i*7 + 2]+float(z));
+                        cubes[z*side_cube*side_cube + y*side_cube + x].colors[i] = glm::vec4(base_verts[i*7+3], base_verts[i*7 + 4], base_verts[i*7 + 5], base_verts[i*7 + 6]);
+                    }
+                    for(int i = 0; i < 36; i++){
+                        cubes[z*side_cube*side_cube + y*side_cube + x].indices[i] = bse_inds[i] + (z*side_cube*side_cube + y*side_cube + x)*8;
+                    }
+                }
+            }
+        }
+
+        cout << "Cubes generated" << endl;
+        cout << cubes[1].vertices[0].x << endl;
+        return cubes;
+    }
+
+
 
     void readRuleset(){
         int na, nb;
@@ -68,31 +119,22 @@ public:
         istr >> lifecycle;     
     }
 
-    void read(string filename){
-        fstream istr(filename.c_str());
-        istr >> nv >> ni >> num_cubes;
-        cout << num_cubes << endl;
-        this->cubes = new Cube[num_cubes];
+    void read(string filename, int num_cubes = 8000){
+        this->num_cubes = num_cubes;
+        nv = num_cubes*8, ni = num_cubes*12;
+        cout << "Num Cubes: " << num_cubes << endl;
+        // this->cubes = new Cube[num_cubes];
         side_length = cbrt(num_cubes);
-        cout << side_length << endl;
-        for(int i = 0; i < num_cubes; i++){
-            for (int j = 0; j < 8; j++){
-                istr >> cubes[i].vertices[j].x >> cubes[i].vertices[j].y >> cubes[i].vertices[j].z >> cubes[i].colors[j].x >> cubes[i].colors[j].y >> cubes[i].colors[j].z >> cubes[i].colors[j].w;
-            }
-        }
-        for(int i = 0; i < num_cubes; i++){
-            for (int j = 0; j < 36; j++){
-                istr >> cubes[i].indices[j];
-            }
-        }
-        istr.close();
+        Cube *cubegen = genCubes(side_length);
+        cout << "Side Length: " << side_length << endl;
+
        // init certain cubes --> need to figure this out
         for (int z = 0; z < side_length; z++){
             for(int y = 0; y < side_length; y++){
                 for (int x = 0; x < side_length; x++){
-                    if(sqrt((x-4.5)*(x-4.5) + (y-4.5)*(y-4.5) + (z-4.5)*(z-4.5)) <= 6){
+                    if(sqrt((x-10.5)*(x-10.5) + (y-10.5)*(y-10.5) + (z-10.5)*(z-10.5)) <= 6){
                         int curr = x+side_length*y+side_length*side_length*z;
-                        for(int i = 0; i < 8; i++) cubes[(int)curr].colors[i].w = 1.0f;
+                        for(int i = 0; i < 8; i++) cubegen[(int)curr].colors[i].w = 1.0f;
                     }
 
                 }
@@ -101,14 +143,14 @@ public:
         for(int i =0; i < side_length*20; i++){
             int x = rand()%side_length,y = rand()%side_length,z = rand()%side_length;
             int curr = x+side_length*y+side_length*side_length*z;
-            for(int i = 0; i < 8; i++) cubes[(int)curr].colors[i].w = 1.0f;
+            for(int i = 0; i < 8; i++) cubegen[(int)curr].colors[i].w = 1.0f;
         }
         // populate cells so we can get next gen
         for (int z = 0; z < side_length; z++){
             for(int y = 0; y < side_length; y++){
                 for (int x = 0; x < side_length; x++){
                     float curr = x+side_length*y+side_length*side_length*z;
-                    cells[z][y][x] = cubes[(int)curr].colors[0].w;
+                    cells[z][y][x] = cubegen[(int)curr].colors[0].w;
                 }
             }
         }
@@ -117,18 +159,18 @@ public:
         vector<unsigned int> indices;
         for(int i = 0; i < num_cubes; i++){
             for (int j = 0; j < 8; j++){
-                vertices.push_back(cubes[i].vertices[j].x);
-                vertices.push_back(cubes[i].vertices[j].y);
-                vertices.push_back(cubes[i].vertices[j].z);
-                vertices.push_back(cubes[i].colors[j].x);
-                vertices.push_back(cubes[i].colors[j].y);
-                vertices.push_back(cubes[i].colors[j].z);
-                vertices.push_back(cubes[i].colors[j].w);
+                vertices.push_back(cubegen[i].vertices[j].x);
+                vertices.push_back(cubegen[i].vertices[j].y);
+                vertices.push_back(cubegen[i].vertices[j].z);
+                vertices.push_back(cubegen[i].colors[j].x);
+                vertices.push_back(cubegen[i].colors[j].y);
+                vertices.push_back(cubegen[i].colors[j].z);
+                vertices.push_back(cubegen[i].colors[j].w);
 
 
             }
             for (int j = 0; j < 36; j++){
-                indices.push_back(cubes[i].indices[j]);
+                indices.push_back(cubegen[i].indices[j]);
             }
         }
         
@@ -189,7 +231,7 @@ public:
     }
 
     void update(){
-        cout << "update" << endl;
+        //cout << "update" << endl;
         float next_gen[side_length][side_length][side_length];
 
         for (int z = 0; z < side_length; z++){

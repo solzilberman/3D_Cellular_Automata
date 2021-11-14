@@ -9,6 +9,7 @@
 #include "./headers/VertexBuffer.h"
 #include "./headers/Objects.h"
 #include "./headers/Camera.h"
+#include "./headers/WireFrame.h"
 #include <glm/gtx/string_cast.hpp>
 // #include <glm/glm.hpp>
 // #include <glm/gtc/matrix_transform.hpp>
@@ -32,15 +33,15 @@ bool rotation = false, animation = false;
 int tt = 0;
 
 vector<float> wire_vertices = {
-    // verts			//colors
- 	    -5.0f, -5.0f, +15.0f, 0.0,0.0,0.0,1.0, // front bottom left
- 	    +15.0f, -5.0f, +15.0f, 0.0,0.0,0.0,1.0,  // front bottom right
- 	    +15.0f, +15.0f, +15.0f, 0.0,0.0,0.0,1.0, // front top right
- 	    -5.0f, +15.0f, +15.0f, 0.0,0.0,0.0,1.0,// front top left 
- 	    -5.0f, -5.0f, -5.0f, 0.0,0.0,0.0,1.0, // back bottom left 
- 	    +15.0f, -5.0f, -5.0f, 0.0,0.0,0.0,1.0, // back bottom right 
- 	    +15.0f, +15.0f, -5.0f, 0.0,0.0,0.0,1.0, // back top right 
- 	    -5.0f, +15.0f, -5.0f, 0.0,0.0,0.0,1.0, // back top left 
+        // verts			      //colors
+        -5.0f, -5.0f,   +25.0f,   0.0,0.0,0.0,1.0,   // front bottom left
+ 	    +25.0f, -5.0f,  +25.0f,   0.0,0.0,0.0,1.0,  // front bottom right
+ 	    +25.0f, +25.0f, +25.0f,   0.0,0.0,0.0,1.0, // front top right
+ 	    -5.0f, +25.0f,  +25.0f,   0.0,0.0,0.0,1.0,  // front top left 
+ 	    -5.0f, -5.0f,   -5.0f,    0.0,0.0,0.0,1.0,    // back bottom left 
+ 	    +25.0f, -5.0f,  -5.0f,    0.0,0.0,0.0,1.0,   // back bottom right 
+ 	    +25.0f, +25.0f, -5.0f,    0.0,0.0,0.0,1.0,  // back top right 
+ 	    -5.0f, +25.0f,  -5.0f,    0.0,0.0,0.0,1.0,   // back top left 
 
   }; // back bottom left --> front bottom right
 
@@ -56,6 +57,7 @@ Camera *c;
 Object *cubes = new Object();
 VertexBufferIndex *wire_vb;
 Shader *wire_sh;
+WireFrame *wf;
 // glut calls this function whenever it needs to redraw
 void display()
 {
@@ -67,7 +69,7 @@ void display()
     glPolygonMode(GL_FRONT_AND_BACK,  GL_FILL);
 	glDrawElements(GL_TRIANGLES, cubes->ni*3, GL_UNSIGNED_INT, 0);
     if (animation){
-        if(tt % 100 == 0){
+        if(tt % 10 == 0){
             tt = 0;
             cubes->update();
         }
@@ -80,6 +82,7 @@ void display()
     wire_vb->use();
     glPolygonMode(GL_FRONT_AND_BACK,  GL_LINES);
 	glDrawElements(GL_LINES,12*2, GL_UNSIGNED_INT, 0);
+    // wf->draw();
     glutSwapBuffers();
    // glutPostRedisplay();
 
@@ -89,7 +92,7 @@ void keyboard(unsigned char key, int x, int y)
 {
     switch (key) {
     case 'r': // rotate camera bout center
-        c->rotate(5.0f);
+        c->_rotate(1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
         break;
     case 'z': // zoom in
         c->_zoom(1/fstep);
@@ -101,6 +104,7 @@ void keyboard(unsigned char key, int x, int y)
         cubes->update();
         break;
     case 'p': // play/pause animation
+        cout << "ppenis" << endl;
         animation = !animation;
         break;
     case 't': //play/pause auto rotation
@@ -126,7 +130,7 @@ void init()
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
     glutInitWindowPosition(1.00, 1.00);
-    glutCreateWindow("Triangle Using OpenGL");
+    glutCreateWindow("3D CA Using OpenGL");
     glutKeyboardFunc(keyboard);
     glClearColor(1, 1, 1, 1);
     glutTimerFunc(0, Timer, 0);
@@ -154,8 +158,10 @@ int main(int argc, char **argv)
     wire_sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
     wire_vb = new VertexBufferIndex(8, wire_vertices.data(),24,wire_elements.data()); 
     sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
-	c = new Camera(glm::vec3(5.0,40.0, 40.0), glm::vec3(5.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy, aspect, near, far);
+	c = new Camera(glm::vec3(10.0,60.0, 60.0), glm::vec3(10.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy, aspect, near, far);
     cubes->read("./models/multicube.obj");
+    // wf = new WireFrame(c,wire_sh,wire_vb);
+   // wf->updateSize(10.0f);
     glutMainLoop();
     return 0;
 }
