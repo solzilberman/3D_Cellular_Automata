@@ -1,10 +1,10 @@
 {
-        -5.0f, -5.0f, +15.0f, 0.0,0.0,0.0,1.0, // front bottom left
- 	    +15.0f, -5.0f, +15.0f, 0.0,0.0,0.0,1.0,  // front bottom right
- 	    +15.0f, +15.0f, +15.0f, 0.0,0.0,0.0,1.0, // front top right
- 	    -5.0f, +15.0f, +15.0f, 0.0,0.0,0.0,1.0,// front top left 
+        -5.0f, -5.0f, +25.0f, 0.0,0.0,0.0,1.0, // front bottom left
+ 	    +25.0f, -5.0f, +25.0f, 0.0,0.0,0.0,1.0,  // front bottom right
+ 	    +25.0f, +25.0f, +25.0f, 0.0,0.0,0.0,1.0, // front top right
+ 	    -5.0f, +25.0f, +25.0f, 0.0,0.0,0.0,1.0,// front top left 
  	    -5.0f, -5.0f, -5.0f, 0.0,0.0,0.0,1.0, // back bottom left 
- 	    +15.0f, -5.0f, -5.0f, 0.0,0.0,0.0,1.0, // back bottom right 
- 	    +15.0f, +15.0f, -5.0f, 0.0,0.0,0.0,1.0, // back top right 
- 	    -5.0f, +15.0f, -5.0f, 0.0,0.0,0.0,1.0, // back top left 
+ 	    +25.0f, -5.0f, -5.0f, 0.0,0.0,0.0,1.0, // back bottom right 
+ 	    +25.0f, +25.0f, -5.0f, 0.0,0.0,0.0,1.0, // back top right 
+ 	    -5.0f, +25.0f, -5.0f, 0.0,0.0,0.0,1.0, // back top left 
 }

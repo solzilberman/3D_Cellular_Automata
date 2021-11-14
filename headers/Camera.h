@@ -28,7 +28,7 @@ class Camera {
 			this->zFar = far;
 			this->projection = glm::perspective(radians(this->fovy), aspect, near, far);
 			this->view = glm::lookAt(eye, target, up);
-			this->model =  glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -4.0f));;
+			this->model =  glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -10.0f));;
 		}
 
 		// translate camera

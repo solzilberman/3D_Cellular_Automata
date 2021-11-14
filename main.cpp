@@ -80,9 +80,9 @@ void display()
     wire_sh->setMat4("pvm", c->pvm());
     wire_sh->setBool("is_wire", true);
     wire_vb->use();
-    glPolygonMode(GL_FRONT_AND_BACK,  GL_LINES);
-	glDrawElements(GL_LINES,12*2, GL_UNSIGNED_INT, 0);
-    // wf->draw();
+    // glPolygonMode(GL_FRONT_AND_BACK,  GL_LINES);
+	// glDrawElements(GL_LINES,12*2, GL_UNSIGNED_INT, 0);
+    wf->draw();
     glutSwapBuffers();
    // glutPostRedisplay();
 
@@ -104,7 +104,6 @@ void keyboard(unsigned char key, int x, int y)
         cubes->update();
         break;
     case 'p': // play/pause animation
-        cout << "ppenis" << endl;
         animation = !animation;
         break;
     case 't': //play/pause auto rotation
@@ -135,9 +134,8 @@ void init()
     glClearColor(1, 1, 1, 1);
     glutTimerFunc(0, Timer, 0);
 	//glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);  
-    glCullFace(GL_BACK);  
-
+    //glEnable(GL_CULL_FACE);  
+    //glCullFace(GL_BACK);  
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glutDisplayFunc(display);
@@ -160,8 +158,8 @@ int main(int argc, char **argv)
     sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
 	c = new Camera(glm::vec3(10.0,60.0, 60.0), glm::vec3(10.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy, aspect, near, far);
     cubes->read("./models/multicube.obj");
-    // wf = new WireFrame(c,wire_sh,wire_vb);
-   // wf->updateSize(10.0f);
+    wf = new WireFrame(c,wire_sh,wire_vb);
+    //wf->updateSize(10.0f);
     glutMainLoop();
     return 0;
 }

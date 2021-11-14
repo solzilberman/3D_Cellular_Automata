@@ -43,10 +43,10 @@ public:
     };
 
     void draw(){
-        wire_sh->use();
-        wire_sh->setMat4("pvm", c->pvm());
-        wire_sh->setBool("is_wire", true);
-        wire_vb->use();
+        // wire_sh->use();
+        // wire_sh->setMat4("pvm", c->pvm());
+        // wire_sh->setBool("is_wire", true);
+        // wire_vb->use();
         glPolygonMode(GL_FRONT_AND_BACK,  GL_LINES);
         glDrawElements(GL_LINES,12*2, GL_UNSIGNED_INT, 0);
     }
