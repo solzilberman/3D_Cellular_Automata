@@ -7,18 +7,18 @@ class VertexBuffer {
 public:
   float* vertices;
   VertexBuffer (unsigned int nv, float *vs) {
-    unsigned long stride = 6u*sizeof(float);
+    unsigned long stride = 7u*sizeof(float);
     vertices = vs;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, stride*nv, vs, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, stride*nv, vs, GL_DYNAMIC_DRAW);
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) 0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*) (3u*sizeof(float)));
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride, (void*) (3u*sizeof(float)));
     glEnableVertexAttribArray(1);
     
 
