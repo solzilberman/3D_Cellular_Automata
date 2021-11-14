@@ -1,5 +1,6 @@
 #ifndef CAMERA_H
 #define CAMERA_H
+#include <glm/gtx/rotate_vector.hpp>
 inline float radians (float x) { return 3.141593f*x/180.0f; }
 // @Class: Camera
 // @Description: Camera class.
@@ -38,8 +39,8 @@ class Camera {
 		}
 
 		// rotate camera
-		void rotate(float angle, glm::vec3 axis) {
-			this->model = glm::rotate(this->model, angle, axis);
+		void rotate(float angle) {
+			this->eye = rotateY(this->eye, radians(angle));
 			this->view = glm::lookAt(this->eye, this->target, this->up);
 		}
 

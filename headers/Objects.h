@@ -65,11 +65,14 @@ public:
         }
         istr.close();
        // init certain cubes --> need to figure this out
-        for (int z = 2; z < side_length-1; z++){
-            for(int y = 2; y < side_length-1; y++){
-                for (int x = 2; x < side_length-1; x++){
-                    int curr = x+side_length*y+side_length*side_length*z;
-                    for(int i = 0; i < 8; i++) cubes[(int)curr].colors[i].w = 1.0f;
+        for (int z = 0; z < side_length; z++){
+            for(int y = 0; y < side_length; y++){
+                for (int x = 0; x < side_length; x++){
+                    if(sqrt((x-4.5)*(x-4.5) + (y-4.5)*(y-4.5) + (z-4.5)*(z-4.5)) <= 6){
+                        int curr = x+side_length*y+side_length*side_length*z;
+                        for(int i = 0; i < 8; i++) cubes[(int)curr].colors[i].w = 1.0f;
+                    }
+
                 }
             }
         }
@@ -191,7 +194,7 @@ public:
                         if(inbounds(x+1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
 
                         if(ncount == 4){
-                            next_gen[z][y][x] = 4.0f;
+                            next_gen[z][y][x] = 5.0f;
                         }
                         else{
                             next_gen[z][y][x] -= 1.0f;
@@ -229,7 +232,7 @@ public:
                         if(inbounds(x-1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
                         if(inbounds(x+1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
                         if(ncount >= 4){
-                            next_gen[z][y][x] = 4.0f;
+                            next_gen[z][y][x] = 5.0f;
                         }
                         else{
                             next_gen[z][y][x] = 0.0f;
