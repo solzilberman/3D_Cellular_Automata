@@ -18,7 +18,11 @@ public:
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*) 0);
     glEnableVertexAttribArray(0);
 
+<<<<<<< HEAD
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*) (3*sizeof(float)));
+=======
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*) (3u*sizeof(float)));
+>>>>>>> parent of 53ab33f... basic 3dCA working
     glEnableVertexAttribArray(1);
     
 
