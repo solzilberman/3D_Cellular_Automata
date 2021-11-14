@@ -61,7 +61,7 @@ class Camera {
 		}
 
 		void _zoom(float fstep){
-			this->fovy *= 1/.9f;
+			this->fovy *= fstep;
 			this->projection = glm::perspective(radians(this->fovy), aspect, zNear, zFar);
 		}
 

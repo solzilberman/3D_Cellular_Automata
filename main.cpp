@@ -33,31 +33,22 @@ int tt = 0;
 
 vector<float> wire_vertices = {
     // verts			//colors
- 	15.0 ,15.0 ,15.0 ,    0.0,0.0,0.0,1.0,
- 	15.0 ,15.0 ,-5.0f ,   0.0,0.0,0.0,1.0,
- 	15.0 ,-5.0f ,15.0 ,   0.0,0.0,0.0,1.0,
- 	15.0 ,-5.0f ,-5.0f ,  0.0,0.0,0.0,1.0,
- 	-5.0f ,15.0 ,15.0 ,   0.0,0.0,0.0,1.0,
- 	-5.0f ,15.0 ,-5.0f ,  0.0,0.0,0.0,1.0,
- 	-5.0f ,-5.0f ,15.0 ,  0.0,0.0,0.0,1.0,
- 	-5.0f ,-5.0f ,-5.0f , 0.0,0.0,0.0,1.0,
+ 	    -5.0f, -5.0f, +15.0f, 0.0,0.0,0.0,1.0, // front bottom left
+ 	    +15.0f, -5.0f, +15.0f, 0.0,0.0,0.0,1.0,  // front bottom right
+ 	    +15.0f, +15.0f, +15.0f, 0.0,0.0,0.0,1.0, // front top right
+ 	    -5.0f, +15.0f, +15.0f, 0.0,0.0,0.0,1.0,// front top left 
+ 	    -5.0f, -5.0f, -5.0f, 0.0,0.0,0.0,1.0, // back bottom left 
+ 	    +15.0f, -5.0f, -5.0f, 0.0,0.0,0.0,1.0, // back bottom right 
+ 	    +15.0f, +15.0f, -5.0f, 0.0,0.0,0.0,1.0, // back top right 
+ 	    -5.0f, +15.0f, -5.0f, 0.0,0.0,0.0,1.0, // back top left 
 
-  };
+  }; // back bottom left --> front bottom right
 
 
 vector<unsigned int> wire_elements = {
-0,6,4,
-0, 2, 6,
-0, 3, 2,
-0, 1, 3,
-2, 7, 6,
-2, 3, 7,
-4, 6, 7,
-4, 7, 5,
-0, 4, 5,
-0, 5, 1,
-1, 5, 7,
-1, 7, 3,};
+    0, 1, 1, 2, 2, 3, 3, 0, // Front
+    4, 5, 5, 6, 6, 7, 7, 4, // Back
+    0, 4, 1, 5, 2, 6, 3, 7};
 
 //class initialization
 Shader *sh;
@@ -77,7 +68,7 @@ void display()
 	glDrawElements(GL_TRIANGLES, cubes->ni*3, GL_UNSIGNED_INT, 0);
     if (animation){
         if(tt % 100 == 0){
-            tt =0;
+            tt = 0;
             cubes->update();
         }
     } 
@@ -85,9 +76,10 @@ void display()
     
     wire_sh->use();
     wire_sh->setMat4("pvm", c->pvm());
+    wire_sh->setBool("is_wire", true);
     wire_vb->use();
     glPolygonMode(GL_FRONT_AND_BACK,  GL_LINES);
-	glDrawElements(GL_LINE_STRIP,12*3, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_LINES,12*2, GL_UNSIGNED_INT, 0);
     glutSwapBuffers();
    // glutPostRedisplay();
 
@@ -96,16 +88,25 @@ void display()
 void keyboard(unsigned char key, int x, int y)
 {
     switch (key) {
-    case 'r':
+    case 'r': // rotate camera bout center
         c->rotate(5.0f);
         break;
-    case 'z':
+    case 'z': // zoom in
         c->_zoom(1/fstep);
         break;
-    case 'u':
+    case 'x': // zoom out
+        c->_zoom(fstep);
+        break;
+    case 'u': //animate 1 step forward
         cubes->update();
         break;
-    case 'q':
+    case 'p': // play/pause animation
+        animation = !animation;
+        break;
+    case 't': //play/pause auto rotation
+        rotation = !rotation;
+        break;
+    case 'q': //quit
         glutLeaveMainLoop();
         return;
     };
@@ -130,6 +131,9 @@ void init()
     glClearColor(1, 1, 1, 1);
     glutTimerFunc(0, Timer, 0);
 	//glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);  
+    glCullFace(GL_BACK);  
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glutDisplayFunc(display);
@@ -148,7 +152,7 @@ int main(int argc, char **argv)
     }
     init();
     wire_sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
-    wire_vb = new VertexBufferIndex(8, wire_vertices.data(),36,wire_elements.data()); 
+    wire_vb = new VertexBufferIndex(8, wire_vertices.data(),24,wire_elements.data()); 
     sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
 	c = new Camera(glm::vec3(5.0,40.0, 40.0), glm::vec3(5.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy, aspect, near, far);
     cubes->read("./models/multicube.obj");

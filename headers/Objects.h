@@ -11,6 +11,7 @@ Encapsulation of all objects in the program.
 #include <stdio.h>
 #include <stdlib.h>
 #include <cmath>
+#include <sstream>
 #include <cstdlib>
 #include "./VertexBuffer.h"
 using namespace std;
@@ -41,11 +42,32 @@ public:
     unsigned int ni;
     float cells[10][10][10];
     VertexBuffer *vb;
+    vector<float> stay_alive;
+    vector<float> born;
+    float lifecycle;
+
 
     Object(){};
     ~Object(){
         delete[] cubes;
     };
+
+    void readRuleset(){
+        int na, nb;
+        string fn = "./configs/rule_set.ca",ruleset;
+        fstream istr(fn.c_str());
+        istr >> na >> nb;
+        stay_alive = vector<float>(na);
+        born = vector<float>(nb);
+        for(int i = 0; i < na; i++){
+            istr >> stay_alive[i];
+        }
+        for(int i = 0; i < nb; i++){
+            istr >> born[i];
+        }  
+        istr >> lifecycle;     
+    }
+
     void read(string filename){
         fstream istr(filename.c_str());
         istr >> nv >> ni >> num_cubes;
@@ -109,14 +131,16 @@ public:
                 indices.push_back(cubes[i].indices[j]);
             }
         }
+        
+        readRuleset();    
 
 
         vb = new VertexBufferIndex(nv, vertices.data(),3*ni, (unsigned int *)indices.data());
     };
 
     
-    // method checks if inbounds
-    bool inbounds(int x, int y, int z){
+    // method checks if inBounds
+    bool inBounds(int x, int y, int z){
         return (x >= 0 && x < side_length && y >= 0 && y < side_length && z >= 0 && z < side_length);
     }
 
@@ -151,6 +175,19 @@ public:
         glBufferSubData(GL_ARRAY_BUFFER, (7*8*4*flat)+7*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
     }
 
+    // check if neighbor count is valid according to ruleset
+    bool validNeighbor(float ncount, bool alive){
+        // @param: ncount - neighbor count
+        // @param alive - if cell is currently alive and we need to check stay alive buffer
+        // @returns True if ncount in ruleset, false otherwise
+        for(auto al : alive ? stay_alive : born){
+            if (ncount == al){
+                return true;
+            }
+        }
+        return false;
+    }
+
     void update(){
         cout << "update" << endl;
         float next_gen[side_length][side_length][side_length];
@@ -163,38 +200,38 @@ public:
                     if(curr >= 1.0f){
                         int ncount = 0;
                         // up,down,left,right,back,front
-                        if(inbounds(x,y+1,z) &&  cells[z][y+1][x] == 1.0) ncount++;
-                        if(inbounds(x,y-1,z) &&  cells[z][y-1][x] == 1.0) ncount++;
-                        if(inbounds(x+1,y,z) &&  cells[z][y][x+1] == 1.0) ncount++;
-                        if(inbounds(x-1,y,z) &&  cells[z][y][x-1] == 1.0) ncount++;
-                        if(inbounds(x,y,z+1) &&  cells[z+1][y][x] == 1.0) ncount++;
-                        if(inbounds(x,y,z-1) &&  cells[z-1][y][x] == 1.0) ncount++;
+                        if(inBounds(x,y+1,z) &&  cells[z][y+1][x] == 1.0) ncount++;
+                        if(inBounds(x,y-1,z) &&  cells[z][y-1][x] == 1.0) ncount++;
+                        if(inBounds(x+1,y,z) &&  cells[z][y][x+1] == 1.0) ncount++;
+                        if(inBounds(x-1,y,z) &&  cells[z][y][x-1] == 1.0) ncount++;
+                        if(inBounds(x,y,z+1) &&  cells[z+1][y][x] == 1.0) ncount++;
+                        if(inBounds(x,y,z-1) &&  cells[z-1][y][x] == 1.0) ncount++;
                         //bottom face
-                        if(inbounds(x-1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x,    y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x-1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x,    y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x-1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x,    y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x,    y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
 
-                        if(inbounds(x-1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x,    y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x-1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x,    y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x-1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x,    y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x,    y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
 
-                        if(inbounds(x-1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x-1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
 
                         if(ncount == 4){
-                            next_gen[z][y][x] = 5.0f;
+                            next_gen[z][y][x] = lifecycle;
                         }
                         else{
                             next_gen[z][y][x] -= 1.0f;
@@ -202,37 +239,37 @@ public:
                     } else{
                         int ncount = 0;
                         // up,down,left,right,back,front
-                        if(inbounds(x,y+1,z) &&  cells[z][y+1][x] == 1.0) ncount++;
-                        if(inbounds(x,y-1,z) &&  cells[z][y-1][x] == 1.0) ncount++;
-                        if(inbounds(x+1,y,z) &&  cells[z][y][x+1] == 1.0) ncount++;
-                        if(inbounds(x-1,y,z) &&  cells[z][y][x-1] == 1.0) ncount++;
-                        if(inbounds(x,y,z+1) &&  cells[z+1][y][x] == 1.0) ncount++;
-                        if(inbounds(x,y,z-1) &&  cells[z-1][y][x] == 1.0) ncount++;
+                        if(inBounds(x,y+1,z) &&  cells[z][y+1][x] == 1.0) ncount++;
+                        if(inBounds(x,y-1,z) &&  cells[z][y-1][x] == 1.0) ncount++;
+                        if(inBounds(x+1,y,z) &&  cells[z][y][x+1] == 1.0) ncount++;
+                        if(inBounds(x-1,y,z) &&  cells[z][y][x-1] == 1.0) ncount++;
+                        if(inBounds(x,y,z+1) &&  cells[z+1][y][x] == 1.0) ncount++;
+                        if(inBounds(x,y,z-1) &&  cells[z-1][y][x] == 1.0) ncount++;
                         //bottom face
-                        if(inbounds(x-1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x,    y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x-1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x,    y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x-1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x,    y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x,    y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
 
-                        if(inbounds(x-1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x,    y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x-1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x,    y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x-1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x,    y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x,    y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
 
-                        if(inbounds(x-1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x-1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inbounds(x+1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
                         if(ncount >= 4){
-                            next_gen[z][y][x] = 5.0f;
+                            next_gen[z][y][x] = lifecycle;
                         }
                         else{
                             next_gen[z][y][x] = 0.0f;
