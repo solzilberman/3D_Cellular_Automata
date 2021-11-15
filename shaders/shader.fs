@@ -2,15 +2,16 @@
 in vec4 color;
 in vec3 position;
 uniform bool is_wire;
+uniform float side_length;
 void main() 
 {
     float x = position.x;
     float y = position.y;
     float z = position.z;
     // float r = sqrt((x-10.5)*(x-10.5) + (y-10.5)*(y-10.5) + (z-10.5)*(z-10.5));
-    float red = position.x/20.0;
-    float green = position.y/20.0;
-    float blue = position.z/20.0;
+    float red = position.x/side_length;
+    float green = position.y/side_length;
+    float blue = position.z/side_length;
     float range2 = 0.5f;
     red = (red*range2);
     green = (green*range2);

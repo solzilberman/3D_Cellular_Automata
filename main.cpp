@@ -25,12 +25,15 @@ int nv = 8;
 int ni = 12;
 float fstep = 0.9f;
 float near = 1.0f;
-float far = 100.0f;
+float far = 150.0f;
 float fovy = 45.0f;
 float aspect = SCREEN_HEIGHT / SCREEN_WIDTH;
 bool rotation = false, animation = false;
-
 int tt = 0;
+
+// init config
+int side_length = 0;
+vector<vector<float>> rules;
 
 vector<float> wire_vertices = {
         // verts			      //colors
@@ -63,13 +66,15 @@ void display()
 {
     // clear the color buffer before each drawing
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-   // glClearColor(1, 1, 1, 1);
+    glClearColor(1, 1, 1, 1);
 
-    sh->use();
-    sh->setMat4("pvm", c->pvm());
-    cubes->vb->use();
-    glPolygonMode(GL_FRONT_AND_BACK,  GL_FILL);
-	glDrawElements(GL_TRIANGLES, cubes->ni*3, GL_UNSIGNED_INT, 0);
+    // sh->use();
+    // sh->setMat4("pvm", c->pvm());
+    // sh->setFloat("side_length", 30.0f);
+    // cubes->vb->use();
+    // glPolygonMode(GL_FRONT_AND_BACK,  GL_FILL);
+	// glDrawElements(GL_TRIANGLES, cubes->ni*3, GL_UNSIGNED_INT, 0);
+    cubes->draw();
     if (animation){
         if(tt % 5 == 0){
             tt = 0;
@@ -78,10 +83,6 @@ void display()
     } 
     if (rotation) c->rotate(1.0f);
     
-    wire_sh->use();
-    wire_sh->setMat4("pvm", c->pvm());
-    wire_sh->setBool("is_wire", true);
-    wire_vb->use();
     wf->draw();
     glutSwapBuffers();
    // glutPostRedisplay();
@@ -122,6 +123,11 @@ void Timer(int value) {
     glutPostRedisplay();
 }
 
+void readConfig(string filename){
+    ifstream istr(filename);
+    istr >> side_length;
+}
+
 void init()
 {
     int argc = 1;
@@ -140,6 +146,7 @@ void init()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glutDisplayFunc(display);
     glewInit();
+    readConfig("./configs/config");
 };
 
 // main function
@@ -153,13 +160,11 @@ int main(int argc, char **argv)
         rotation = arg2 == "true";
     }
     init();
-    wire_sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
-    wire_vb = new VertexBufferIndex(8, wire_vertices.data(),24,wire_elements.data()); 
-    sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
-	c = new Camera(glm::vec3(10.0,60.0, 60.0), glm::vec3(10.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy, aspect, near, far);
-    cubes->read("./models/multicube.obj");
-    wf = new WireFrame();
-    wf->updateSize(30.0f);
+    //wire_sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
+    //wire_vb = new VertexBufferIndex(8, wire_vertices.data(),24,wire_elements.data()); 
+	c = new Camera(glm::vec3((side_length/2.0f),side_length+40.0f, side_length+40.0f), glm::vec3((side_length/2.0f), 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy, aspect, near, far);
+    wf = new WireFrame((float) side_length + 5.0f,c);
+    cubes->read("./models/multicube.obj", side_length, c);
     glutMainLoop();
     return 0;
 }
