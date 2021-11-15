@@ -63,6 +63,8 @@ void display()
 {
     // clear the color buffer before each drawing
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+   // glClearColor(1, 1, 1, 1);
+
     sh->use();
     sh->setMat4("pvm", c->pvm());
     cubes->vb->use();
