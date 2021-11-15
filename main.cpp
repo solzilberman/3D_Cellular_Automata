@@ -69,7 +69,7 @@ void display()
     glPolygonMode(GL_FRONT_AND_BACK,  GL_FILL);
 	glDrawElements(GL_TRIANGLES, cubes->ni*3, GL_UNSIGNED_INT, 0);
     if (animation){
-        if(tt % 10 == 0){
+        if(tt % 5 == 0){
             tt = 0;
             cubes->update();
         }
@@ -80,8 +80,6 @@ void display()
     wire_sh->setMat4("pvm", c->pvm());
     wire_sh->setBool("is_wire", true);
     wire_vb->use();
-    // glPolygonMode(GL_FRONT_AND_BACK,  GL_LINES);
-	// glDrawElements(GL_LINES,12*2, GL_UNSIGNED_INT, 0);
     wf->draw();
     glutSwapBuffers();
    // glutPostRedisplay();
@@ -158,8 +156,8 @@ int main(int argc, char **argv)
     sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
 	c = new Camera(glm::vec3(10.0,60.0, 60.0), glm::vec3(10.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy, aspect, near, far);
     cubes->read("./models/multicube.obj");
-    wf = new WireFrame(c,wire_sh,wire_vb);
-    //wf->updateSize(10.0f);
+    wf = new WireFrame();
+    wf->updateSize(30.0f);
     glutMainLoop();
     return 0;
 }

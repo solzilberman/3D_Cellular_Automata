@@ -40,7 +40,8 @@ public:
     unsigned int side_length;
     unsigned int nv;
     unsigned int ni;
-    float cells[20][20][20];
+    //float cells[20][20][20];
+    vector<vector<vector<float>>> cells_vec;
     VertexBuffer *vb;
     vector<float> stay_alive;
     vector<float> born;
@@ -119,15 +120,15 @@ public:
         istr >> lifecycle;     
     }
 
-    void read(string filename, int num_cubes = 8000){
-        this->num_cubes = num_cubes;
+    void read(string filename, int sl = 20){
+        this->num_cubes = sl*sl*sl;
         nv = num_cubes*8, ni = num_cubes*12;
         cout << "Num Cubes: " << num_cubes << endl;
         // this->cubes = new Cube[num_cubes];
-        side_length = cbrt(num_cubes);
+        side_length = sl;//cbrt(num_cubes);
         Cube *cubegen = genCubes(side_length);
         cout << "Side Length: " << side_length << endl;
-
+        cells_vec = vector<vector<vector<float>>>(side_length, vector<vector<float>>(side_length, vector<float>(side_length)));
        // init certain cubes --> need to figure this out
         for (int z = 0; z < side_length; z++){
             for(int y = 0; y < side_length; y++){
@@ -150,7 +151,8 @@ public:
             for(int y = 0; y < side_length; y++){
                 for (int x = 0; x < side_length; x++){
                     float curr = x+side_length*y+side_length*side_length*z;
-                    cells[z][y][x] = cubegen[(int)curr].colors[0].w;
+                   // cells[z][y][x] = cubegen[(int)curr].colors[0].w;
+                    cells_vec[z][y][x] = cubegen[(int)curr].colors[0].w;
                 }
             }
         }
@@ -233,104 +235,110 @@ public:
     void update(){
         //cout << "update" << endl;
         float next_gen[side_length][side_length][side_length];
+        vector<vector<vector<float>>> next_gen_vec = vector<vector<vector<float>>>(side_length, vector<vector<float>>(side_length, vector<float>(side_length,0.0f)));
+
 
         for (int z = 0; z < side_length; z++){
             for(int y = 0; y < side_length; y++){
                 for (int x = 0; x < side_length; x++){
-                    float curr = cells[z][y][x];
+                    float curr = cells_vec[z][y][x];
                     
                     if(curr >= 1.0f){
                         int ncount = 0;
                         // up,down,left,right,back,front
-                        if(inBounds(x,y+1,z) &&  cells[z][y+1][x] == 1.0) ncount++;
-                        if(inBounds(x,y-1,z) &&  cells[z][y-1][x] == 1.0) ncount++;
-                        if(inBounds(x+1,y,z) &&  cells[z][y][x+1] == 1.0) ncount++;
-                        if(inBounds(x-1,y,z) &&  cells[z][y][x-1] == 1.0) ncount++;
-                        if(inBounds(x,y,z+1) &&  cells[z+1][y][x] == 1.0) ncount++;
-                        if(inBounds(x,y,z-1) &&  cells[z-1][y][x] == 1.0) ncount++;
+                        if(inBounds(x,y+1,z) &&  cells_vec[z][y+1][x] == 1.0) ncount++;
+                        if(inBounds(x,y-1,z) &&  cells_vec[z][y-1][x] == 1.0) ncount++;
+                        if(inBounds(x+1,y,z) &&  cells_vec[z][y][x+1] == 1.0) ncount++;
+                        if(inBounds(x-1,y,z) &&  cells_vec[z][y][x-1] == 1.0) ncount++;
+                        if(inBounds(x,y,z+1) &&  cells_vec[z+1][y][x] == 1.0) ncount++;
+                        if(inBounds(x,y,z-1) &&  cells_vec[z-1][y][x] == 1.0) ncount++;
                         //bottom face
-                        if(inBounds(x-1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x,    y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x-1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x,    y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x-1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z-1) &&  cells_vec[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z-1) &&  cells_vec[z-1][y-1][x+1] == 1.0) ncount++;
+                        if(inBounds(x,    y-1,z-1) &&  cells_vec[z-1][y-1][x] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z+1) &&  cells_vec[z+1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z+1) &&  cells_vec[z+1][y-1][x+1] == 1.0) ncount++;
+                        if(inBounds(x,    y-1,z+1) &&  cells_vec[z+1][y-1][x] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z) &&  cells_vec[z][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z) &&  cells_vec[z][y-1][x-1] == 1.0) ncount++;
 
-                        if(inBounds(x-1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x,    y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x-1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x,    y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x-1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z-1) &&  cells_vec[z-1][y+1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z-1) &&  cells_vec[z-1][y+1][x+1] == 1.0) ncount++;
+                        if(inBounds(x,    y+1,z-1) &&  cells_vec[z-1][y+1][x] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z+1) &&  cells_vec[z+1][y+1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z+1) &&  cells_vec[z+1][y+1][x+1] == 1.0) ncount++;
+                        if(inBounds(x,    y+1,z+1) &&  cells_vec[z+1][y+1][x] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z) &&  cells_vec[z][y+1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z) &&  cells_vec[z][y+1][x+1] == 1.0) ncount++;
 
-                        if(inBounds(x-1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x-1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y,z-1) &&  cells_vec[z-1][y][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y,z-1) &&  cells_vec[z-1][y][x+1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y,z+1) &&  cells_vec[z+1][y][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y,z+1) &&  cells_vec[z+1][y][x+1] == 1.0) ncount++;
 
                         if(ncount == 4){
-                            next_gen[z][y][x] = lifecycle;
+                            next_gen_vec[z][y][x] = lifecycle;
                         }
                         else{
-                            next_gen[z][y][x] -= 1.0f;
+                            next_gen_vec[z][y][x] = cells_vec[z][y][x] - 1.0f;
                         }
                     } else{
                         int ncount = 0;
                         // up,down,left,right,back,front
-                        if(inBounds(x,y+1,z) &&  cells[z][y+1][x] == 1.0) ncount++;
-                        if(inBounds(x,y-1,z) &&  cells[z][y-1][x] == 1.0) ncount++;
-                        if(inBounds(x+1,y,z) &&  cells[z][y][x+1] == 1.0) ncount++;
-                        if(inBounds(x-1,y,z) &&  cells[z][y][x-1] == 1.0) ncount++;
-                        if(inBounds(x,y,z+1) &&  cells[z+1][y][x] == 1.0) ncount++;
-                        if(inBounds(x,y,z-1) &&  cells[z-1][y][x] == 1.0) ncount++;
+                        if(inBounds(x,y+1,z) &&  cells_vec[z][y+1][x] == 1.0) ncount++;
+                        if(inBounds(x,y-1,z) &&  cells_vec[z][y-1][x] == 1.0) ncount++;
+                        if(inBounds(x+1,y,z) &&  cells_vec[z][y][x+1] == 1.0) ncount++;
+                        if(inBounds(x-1,y,z) &&  cells_vec[z][y][x-1] == 1.0) ncount++;
+                        if(inBounds(x,y,z+1) &&  cells_vec[z+1][y][x] == 1.0) ncount++;
+                        if(inBounds(x,y,z-1) &&  cells_vec[z-1][y][x] == 1.0) ncount++;
                         //bottom face
-                        if(inBounds(x-1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x,    y-1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x-1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x,    y-1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x-1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y-1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z-1) &&  cells_vec[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z-1) &&  cells_vec[z-1][y-1][x+1] == 1.0) ncount++;
+                        if(inBounds(x,    y-1,z-1) &&  cells_vec[z-1][y-1][x] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z+1) &&  cells_vec[z+1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z+1) &&  cells_vec[z+1][y-1][x+1] == 1.0) ncount++;
+                        if(inBounds(x,    y-1,z+1) &&  cells_vec[z+1][y-1][x] == 1.0) ncount++;
+                        if(inBounds(x-1,  y-1,z) &&  cells_vec[z][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y-1,z) &&  cells_vec[z][y-1][x-1] == 1.0) ncount++;
 
-                        if(inBounds(x-1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x,    y+1,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x-1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x,    y+1,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x-1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y+1,z) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z-1) &&  cells_vec[z-1][y+1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z-1) &&  cells_vec[z-1][y+1][x+1] == 1.0) ncount++;
+                        if(inBounds(x,    y+1,z-1) &&  cells_vec[z-1][y+1][x] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z+1) &&  cells_vec[z+1][y+1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z+1) &&  cells_vec[z+1][y+1][x+1] == 1.0) ncount++;
+                        if(inBounds(x,    y+1,z+1) &&  cells_vec[z+1][y+1][x] == 1.0) ncount++;
+                        if(inBounds(x-1,  y+1,z) &&  cells_vec[z][y+1][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y+1,z) &&  cells_vec[z][y+1][x+1] == 1.0) ncount++;
 
-                        if(inBounds(x-1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y,z-1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x-1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
-                        if(inBounds(x+1,  y,z+1) &&  cells[z-1][y-1][x-1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y,z-1) &&  cells_vec[z-1][y][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y,z-1) &&  cells_vec[z-1][y][x+1] == 1.0) ncount++;
+                        if(inBounds(x-1,  y,z+1) &&  cells_vec[z+1][y][x-1] == 1.0) ncount++;
+                        if(inBounds(x+1,  y,z+1) &&  cells_vec[z+1][y][x+1] == 1.0) ncount++;
                         if(ncount >= 4){
-                            next_gen[z][y][x] = lifecycle;
+                            next_gen_vec[z][y][x] = lifecycle;
                         }
                         else{
-                            next_gen[z][y][x] = 0.0f;
+                            next_gen_vec[z][y][x] = 0.0f;
                         }
                     }
                 }
             }
         }
         // now lets update buffer based on nextgen
-        // cout << cells[5][5][5] << endl; 
-        mempcpy(cells, next_gen, num_cubes*sizeof(float));
-
+        // cout << cells_vec[5][5][5] << endl; 
+        //mempcpy(cells, next_gen, num_cubes*sizeof(float));
         for (int z = 0; z < side_length; z++){
             for(int y = 0; y < side_length; y++){
                 for (int x = 0; x < side_length; x++){
-                    updateBuffer(x,y,z,next_gen[z][x][y]);
+                    if (cells_vec[z][y][x] != next_gen_vec[z][y][x] ){
+                        updateBuffer(x,y,z,next_gen_vec[z][x][y]);
+                    }
                 }
             }
         }
+
+        cells_vec = next_gen_vec;
+        next_gen_vec.clear();
     };
 
     void simple_update(int floor){

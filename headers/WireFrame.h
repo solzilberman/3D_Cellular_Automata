@@ -3,8 +3,6 @@
 
 class WireFrame {
 public:
-    Shader *wire_sh;
-    VertexBufferIndex *wire_vb;
     Camera *c;
     vector<float> wire_vertices = {
             // verts			      //colors
@@ -24,11 +22,7 @@ public:
         4, 5, 5, 6, 6, 7, 7, 4, // Back
         0, 4, 1, 5, 2, 6, 3, 7};
 
-    WireFrame(Camera *cam, Shader *wire_sh, VertexBufferIndex *wire_vb) {
-        c = cam;
-        wire_sh = wire_sh;
-        wire_vb = wire_vb;
-    };
+    WireFrame() {};
     ~WireFrame();
 
     void updateSize(float size){
@@ -42,11 +36,15 @@ public:
         cout << wire_vertices[2] << endl;
     };
 
+    vector<float> getVertices() {
+        return wire_vertices;
+    };
+    
+    vector<unsigned int> getInds() {
+        return wire_elements;
+    };
+
     void draw(){
-        // wire_sh->use();
-        // wire_sh->setMat4("pvm", c->pvm());
-        // wire_sh->setBool("is_wire", true);
-        // wire_vb->use();
         glPolygonMode(GL_FRONT_AND_BACK,  GL_LINES);
         glDrawElements(GL_LINES,12*2, GL_UNSIGNED_INT, 0);
     }
