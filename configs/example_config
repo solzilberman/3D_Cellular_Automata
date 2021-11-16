@@ -1,0 +1,8 @@
+[side length of world] 
+[lighting enabled]     
+
+example config './config':
+-----------------------------------
+20
+1
+-----------------------------------
