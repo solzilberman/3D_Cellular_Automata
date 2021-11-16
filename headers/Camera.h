@@ -40,20 +40,16 @@ class Camera {
 
 		// rotate camera
 		void rotate(float angle) {
-			// float radius = glm::length(this->eye - this->target);
-			// float camX   = cos(radians(angle)) * radius;
-			// float camZ   = sin(radians(angle)) * radius;
-			// this->eye = glm::vec3(camX, 0.0f, camZ) + this->target;
-			// view = glm::lookAt(
-			// 	glm::vec3(camX, 0.0f, camZ) + parentEntity.position,
-			// 	parentEntity.position,
-			// 	glm::vec3(0.0f, 1.0f, 0.0f));
 			this->eye = rotateY(this->eye, radians(angle));
 			this->view = glm::lookAt(this->eye, this->target, this->up);
 		}
 
 		glm::mat4 pvm() {
 			return this->projection * this->view * this->model;
+		}
+
+		glm::mat4 getModel() {
+			return this->model;
 		}
 
 		void _lookat( glm::vec3 eye, glm::vec3 target, glm::vec3 up ) {

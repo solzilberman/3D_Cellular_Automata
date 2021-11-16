@@ -66,7 +66,7 @@ void display()
 {
     // clear the color buffer before each drawing
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-    glClearColor(1, 1, 1, 1);
+    glClearColor(0,0,0,0);
 
     // sh->use();
     // sh->setMat4("pvm", c->pvm());
@@ -110,7 +110,31 @@ void keyboard(unsigned char key, int x, int y)
     case 't': //play/pause auto rotation
         rotation = !rotation;
         break;
-    case 'q': //quit
+    case 'a':
+        //translate left
+        c->translate(glm::vec3(1.0f, 0.0f, 0.0f));
+        break;
+    case 'd':
+        //translate right
+        c->translate(glm::vec3(-1.0f, 0.0f, 0.0f));
+        break;
+    case 'w':
+        //translate forward
+        c->translate(glm::vec3(0.0f, 0.0f,-1.0f));
+        break;
+    case 's':
+        //translate backward
+        c->translate(glm::vec3(0.0f, 0.0f,1.0f));
+        break;
+    case 'q':
+        //translate forward
+        c->translate(glm::vec3(0.0f,-1.0f, 0.0f));
+        break;
+    case 'e':
+        //translate backward
+        c->translate(glm::vec3(0.0f,1.0f, 0.0f));
+        break;
+    case 'k': //quit
         glutLeaveMainLoop();
         return;
     };
@@ -137,7 +161,7 @@ void init()
     glutInitWindowPosition(1.00, 1.00);
     glutCreateWindow("3D CA Using OpenGL");
     glutKeyboardFunc(keyboard);
-    glClearColor(1, 1, 1, 1);
+    glClearColor(0,0,0,0);
     glutTimerFunc(0, Timer, 0);
 	//glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);  

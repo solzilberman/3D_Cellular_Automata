@@ -233,7 +233,7 @@ public:
             // calc normal between vertices[indices[i*3]] and vertices[indices[i*3+1]] and vertices[indices[i*3+2]]
              
             glm::vec3 norm = glm::normalize(glm::cross(verts[indices[i*3+2]]-verts[indices[i*3+1]], verts[indices[i*3]]-verts[indices[i*3+1]]));
-            glm::vec4 exp_normal = glm::vec4(norm.x, norm.y, norm.z,i < 12 ? 1.0f : 0.0f);
+            glm::vec4 exp_normal = glm::vec4(norm.x, norm.y, norm.z,0.0f);
             for(int j = 0; j < 3; j++){
                 shaded_verts[i*3+j] = verts[indices[i*3+j]];
                 shaded_norms[i*3+j] = exp_normal;
@@ -250,11 +250,32 @@ public:
             final_vertices.push_back(shaded_norms[i].z);
             final_vertices.push_back(shaded_norms[i].w);
         }
-
-        for(int i = 0; i < 36*10; i++){ // TODO: make sphere in middle
-            final_vertices[i*7+6] = 1.0f;
+        for (int z = 0; z < side_length; z++){
+                    for(int y = 0; y < side_length; y++){
+                        for (int x = 0; x < side_length; x++){
+                            if(sqrt((x-side_length/2.0f)*(x-side_length/2.0f) + (y-side_length/2.0f)*(y-side_length/2.0f) + (z-side_length/2.0f)*(z-side_length/2.0f)) <= 5){
+                                int curr = x+side_length*y+side_length*side_length*z;
+                                for(int i = 0; i < 8; i++) cubegen[(int)curr].colors[i].w = 1.0f;
+                            }
+                }
+            }
         }
-      
+        for (int z = 0; z < side_length; z++){
+            for(int y = 0; y < side_length; y++){
+                for (int x = 0; x < side_length; x++){
+                    float curr = x+side_length*y+side_length*side_length*z;
+                   // cells[z][y][x] = cubegen[(int)curr].colors[0].w;
+                    cells_vec[z][y][x] = cubegen[(int)curr].colors[0].w;
+                    for(int i = 0; i < 36; i++) {
+                        final_vertices[ (7*36*curr)+i*7+6] = 1.0f;
+                    }
+
+                }
+            }
+        }
+    
+
+
         readRuleset();    
         cam = camera;
         sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
@@ -358,7 +379,9 @@ public:
     void draw(){
         sh->use();
         sh->setMat4("pvm", cam->pvm());
-        sh->setFloat("side_length", side_length-5);
+        sh->setMat4("model", cam->getModel());
+        sh->setVec3("eye", cam->eye.x, cam->eye.y, cam->eye.z);
+        sh->setFloat("side_length", side_length-(side_length/2.0f));
         vb->use();
         glPolygonMode(GL_FRONT_AND_BACK,  GL_FILL);
         glDrawArrays(GL_TRIANGLES,0,3*12*8000);
