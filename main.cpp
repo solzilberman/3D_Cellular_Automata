@@ -102,7 +102,7 @@ void keyboard(unsigned char key, int x, int y)
         c->_zoom(fstep);
         break;
     case 'u': //animate 1 step forward
-        cubes->update();
+        cubes->simple_update(0.0f);
         break;
     case 'p': // play/pause animation
         animation = !animation;

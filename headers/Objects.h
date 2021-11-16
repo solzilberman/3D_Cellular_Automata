@@ -129,6 +129,9 @@ public:
             }
         }
 
+        vector<float> combo_verts;
+        // iterate over all cubes and calculate normals per triangle
+        
         cout << "[status] Cubes generated" << endl;
         return cubes;
     }
@@ -207,24 +210,52 @@ public:
     
         vector<float> vertices;
         vector<unsigned int> indices;
+        glm:: vec3 *verts = new glm::vec3[nv];
         for(int i = 0; i < num_cubes; i++){
             for (int j = 0; j < 8; j++){
                 vertices.push_back(cubegen[i].vertices[j].x);
                 vertices.push_back(cubegen[i].vertices[j].y);
                 vertices.push_back(cubegen[i].vertices[j].z);
-                vertices.push_back(cubegen[i].colors[j].x);
-                vertices.push_back(cubegen[i].colors[j].y);
-                vertices.push_back(cubegen[i].colors[j].z);
-                vertices.push_back(cubegen[i].colors[j].w);
+                verts[i*8 + j] = cubegen[i].vertices[j];
+                // vertices.push_back(cubegen[i].colors[j].x);
+                // vertices.push_back(cubegen[i].colors[j].y);
+                // vertices.push_back(cubegen[i].colors[j].z);
+                // vertices.push_back(cubegen[i].colors[j].w);
             }
             for (int j = 0; j < 36; j++){
                 indices.push_back(cubegen[i].indices[j]);
             }
         }
+        int nt  = 12*side_length*side_length*side_length;
+        vector<glm::vec3> shaded_verts(nt*3);
+        vector<glm::vec4> shaded_norms(nt*3);
+        for(int i = 0; i < nt; i++){
+            // calc normal between vertices[indices[i*3]] and vertices[indices[i*3+1]] and vertices[indices[i*3+2]]
+             
+            glm::vec3 norm = glm::normalize(glm::cross(verts[indices[i*3+2]]-verts[indices[i*3+1]], verts[indices[i*3]]-verts[indices[i*3+1]]));
+            glm::vec4 exp_normal = glm::vec4(norm.x, norm.y, norm.z, 1.0f);
+            for(int j = 0; j < 3; j++){
+                shaded_verts[i*3+j] = verts[indices[i*3+j]];
+                shaded_norms[i*3+j] = exp_normal;
+            }   
+        }
+        vector<float> final_vertices(3*nt*7);
+        for (int i = 0; i < 3*nt; i++){
+            final_vertices.push_back(shaded_verts[i].x);
+            final_vertices.push_back(shaded_verts[i].y);
+            final_vertices.push_back(shaded_verts[i].z);
+            final_vertices.push_back(shaded_norms[i].x);
+            final_vertices.push_back(shaded_norms[i].y);
+            final_vertices.push_back(shaded_norms[i].z);
+            final_vertices.push_back(shaded_norms[i].w);
+        }
+        cout << shaded_verts.size() << endl;
+
         readRuleset();    
         cam = camera;
         sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
-        vb = new VertexBufferIndex(nv, vertices.data(),3*ni, (unsigned int *)indices.data());
+        //vb = new VertexBufferIndex(nv, vertices.data(),3*ni, (unsigned int *)indices.data());
+        vb = new VertexBuffer(3*nt,final_vertices.data());
     };
 
     
@@ -238,14 +269,34 @@ public:
         if (val >= 1.0f) val = (val*1.0f)/(lifecycle);
         else if (val <= 0.0f) val = 0.0f;
         float d[1] = {val};
-        glBufferSubData(GL_ARRAY_BUFFER, (7*8*4*flat)+0*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (7*8*4*flat)+1*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (7*8*4*flat)+2*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (7*8*4*flat)+3*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (7*8*4*flat)+4*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (7*8*4*flat)+5*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (7*8*4*flat)+6*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (7*8*4*flat)+7*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+0*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+1*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+2*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+3*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+4*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+5*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+6*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+7*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+8*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+9*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+10*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+11*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+12*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+12*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+14*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+15*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+16*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+17*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+18*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+19*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+20*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+21*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+22*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+23*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+
+
     }
 
     // check if neighbor count is valid according to ruleset
@@ -312,22 +363,25 @@ public:
     };
 
     void simple_update(int floor){
-        for (int z = 0; z < side_length; z++){
-            for(int y = 0; y < side_length; y++){
-                for (int x = 0; x < side_length; x++){
-                    updateBuffer(x,y,z,1.0f);
-                }
-            }
-        }
+        // for (int z = 0; z < side_length; z++){
+        //     for(int y = 0; y < side_length; y++){
+        //         for (int x = 0; x < side_length; x++){
+        //             updateBuffer(x,y,z,1.0f);
+        //         }
+        //     }
+        // }
+         updateBuffer(0,0,0,1.0f);
+         updateBuffer(1,0,0,1.0f);
+         updateBuffer(2,0,0,1.0f);
     }
 
     void draw(){
         sh->use();
         sh->setMat4("pvm", cam->pvm());
-        sh->setFloat("side_length", side_length-10);
+        sh->setFloat("side_length", side_length-5);
         vb->use();
         glPolygonMode(GL_FRONT_AND_BACK,  GL_FILL);
-        glDrawElements(GL_TRIANGLES,12*num_cubes*3, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES,0,3*12*8000);
     }
     
 };
