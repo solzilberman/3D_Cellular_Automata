@@ -1,7 +1,11 @@
+11-16-2021
+Todo List
+[ ] Config file containing all info
+[ ] Switch bw lighting/regular
+[ ] Fix depth bug
+=====================================================
 11-15-2021
 Todo List
-[ ] Blinn Lighting
-[ ] Proper Winding Order
-[ ] 0.5 size cubes
+[x] Blinn Lighting
 [x] WireFrame Class encapsulate entire render step
 [ ] Config file containing all info
