@@ -6,6 +6,7 @@ in vec3 pw;
 uniform bool is_wire;
 uniform float side_length;
 uniform vec3 eye;
+
 vec3 lighting()
 {
     float x = position.x;
@@ -39,17 +40,20 @@ vec3 lighting()
     vec3 n = normalize(nw);
     vec3 v = normalize(eye - pw);
     vec3 c = vec3(0.0f);
-    c += amb*md;
-    vec3 ll = lpos - pw;
-    if (dot(ll, n) > 0.0f) {
-        float d = length(ll), k = 1.0f/(1.0f + kl*d + kq*d*d);
-        vec3 kv = vec3(k, k, k), l = vec3(ll.x/d, ll.y/d, ll.z/d);
-        c += diff*md*dot(n, l)*kv;
-    
-        vec3 h = normalize(l + v);
-        float nh = dot(n, h);
-        c += spec*ms*pow(nh, ns)*kv;
-      
+    for(int i = 0; i < 1; i++){
+        lpos = vec3(i == 0 ? 15 : -15 , 15, 15);
+        c += amb*md;
+        vec3 ll = lpos - pw;
+        if (dot(ll, n) > 0.0f) {
+            float d = length(ll), k = 1.0f/(1.0f + kl*d + kq*d*d);
+            vec3 kv = vec3(k, k, k), l = vec3(ll.x/d, ll.y/d, ll.z/d);
+            c += diff*md*dot(n, l)*kv;
+        
+            vec3 h = normalize(l + v);
+            float nh = dot(n, h);
+            c += spec*ms*pow(nh, ns)*kv;
+        
+        }
     }
     return vec3(c);
 }
