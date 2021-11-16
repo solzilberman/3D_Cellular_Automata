@@ -76,7 +76,7 @@ void display()
 	// glDrawElements(GL_TRIANGLES, cubes->ni*3, GL_UNSIGNED_INT, 0);
     cubes->draw();
     if (animation){
-        if(tt % 5 == 0){
+        if(tt % 15 == 0){
             tt = 0;
             cubes->update();
         }
@@ -102,7 +102,7 @@ void keyboard(unsigned char key, int x, int y)
         c->_zoom(fstep);
         break;
     case 'u': //animate 1 step forward
-        cubes->simple_update(0.0f);
+        cubes->update();
         break;
     case 'p': // play/pause animation
         animation = !animation;

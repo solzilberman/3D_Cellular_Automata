@@ -233,13 +233,14 @@ public:
             // calc normal between vertices[indices[i*3]] and vertices[indices[i*3+1]] and vertices[indices[i*3+2]]
              
             glm::vec3 norm = glm::normalize(glm::cross(verts[indices[i*3+2]]-verts[indices[i*3+1]], verts[indices[i*3]]-verts[indices[i*3+1]]));
-            glm::vec4 exp_normal = glm::vec4(norm.x, norm.y, norm.z, 1.0f);
+            glm::vec4 exp_normal = glm::vec4(norm.x, norm.y, norm.z,i < 12 ? 1.0f : 0.0f);
             for(int j = 0; j < 3; j++){
                 shaded_verts[i*3+j] = verts[indices[i*3+j]];
                 shaded_norms[i*3+j] = exp_normal;
             }   
         }
-        vector<float> final_vertices(3*nt*7);
+
+        vector<float> final_vertices;
         for (int i = 0; i < 3*nt; i++){
             final_vertices.push_back(shaded_verts[i].x);
             final_vertices.push_back(shaded_verts[i].y);
@@ -249,8 +250,11 @@ public:
             final_vertices.push_back(shaded_norms[i].z);
             final_vertices.push_back(shaded_norms[i].w);
         }
-        cout << shaded_verts.size() << endl;
 
+        for(int i = 0; i < 36*10; i++){ // TODO: make sphere in middle
+            final_vertices[i*7+6] = 1.0f;
+        }
+      
         readRuleset();    
         cam = camera;
         sh = new Shader("./shaders/shader.vs","./shaders/shader.fs");
@@ -266,37 +270,13 @@ public:
 
     void updateBuffer(int x, int y, int z,float val){
         int flat = x + y*side_length + z*side_length*side_length;
-        if (val >= 1.0f) val = (val*1.0f)/(lifecycle);
+        if (val >= 1.0f) val = 1.0f;
+        // if (val >= 1.0f) val = (val*1.0f)/(lifecycle);
         else if (val <= 0.0f) val = 0.0f;
         float d[1] = {val};
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+0*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+1*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+2*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+3*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+4*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+5*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+6*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+7*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+8*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+9*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+10*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+11*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+12*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+12*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+14*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+15*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+16*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+17*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+18*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+19*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+20*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+21*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+22*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-        glBufferSubData(GL_ARRAY_BUFFER, (168*flat)+23*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
-
-
+        for (int i = 0; i < 36; i++){
+            glBufferSubData(GL_ARRAY_BUFFER, (7*36*4*flat)+i*7*sizeof(float)+6*sizeof(float),1*sizeof(float), d);
+        }
     }
 
     // check if neighbor count is valid according to ruleset
