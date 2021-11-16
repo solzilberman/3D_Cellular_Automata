@@ -14,7 +14,7 @@ class WireFrame {
 
     vector<unsigned int> wire_elements;
 
-    WireFrame(float size, Camera *c) {
+    WireFrame(float size, Camera *c, string vertex_shader, string fragment_shader) {
         wire_vertices = {
             // verts			      //colors
             -5.0f, -5.0f, +size, 0.0, 0.0, 0.0, 1.0, // front bottom left
@@ -32,7 +32,7 @@ class WireFrame {
 
         wvb = new VertexBufferIndex(8, wire_vertices.data(), 24,
                                     (unsigned int *)wire_elements.data());
-        wsh = new Shader("./shaders/shader.vs", "./shaders/shader.fs");
+        wsh = new Shader(vertex_shader.c_str(), fragment_shader.c_str());
         cam = c;
     };
     ~WireFrame();

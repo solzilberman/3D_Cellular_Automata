@@ -29,6 +29,9 @@ float far = 100.0f;
 float fovy = 45.0f;
 float aspect = SCREEN_HEIGHT / SCREEN_WIDTH;
 bool rotation = false, animation = false;
+bool LIGHTING_ENABLED = true;
+string VSHADER_PATH = "./shaders/shader.vs";
+string FSHADER_PATH = "./shaders/shader.fs";
 int tt = 0;
 
 // init config
@@ -63,7 +66,8 @@ WireFrame *wf;
 void display() {
     // clear the color buffer before each drawing
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0, 0, 0, 0);
+    if (LIGHTING_ENABLED) glClearColor(0, 0, 0, 0);
+	else glClearColor(1, 1, 1, 1);
     cubes->draw();
     if (animation) {
         if (tt % 15 == 0) {
@@ -140,6 +144,9 @@ void Timer(int value) {
 void readConfig(string filename) {
     ifstream istr(filename);
     istr >> side_length;
+	istr >> LIGHTING_ENABLED;
+	VSHADER_PATH = LIGHTING_ENABLED ? "./shaders/shader.vs" : "./shaders/shader_nl.vs";
+	FSHADER_PATH = LIGHTING_ENABLED ? "./shaders/shader.fs" : "./shaders/shader_nl.fs";
 }
 
 void init() {
@@ -179,8 +186,8 @@ int main(int argc, char **argv) {
                              side_length + 40.0f),
                    glm::vec3((side_length / 2.0f), 0.0, 0.0),
                    glm::vec3(0.0, 1.0, 0.0), fovy, aspect, near, far);
-    wf = new WireFrame((float)side_length + 5.0f, c);
-    cubes->read("./models/multicube.obj", side_length, c);
+    wf = new WireFrame((float)side_length + 5.0f, c,VSHADER_PATH, FSHADER_PATH);
+    cubes->read(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, side_length, c);
     glutMainLoop();
     return 0;
 }

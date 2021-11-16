@@ -39,22 +39,23 @@ class Object {
   public:
     Cube *cubes;
     const vector<vector<float>> mooreN = {
-        {0, 1, 0},  {0, -1, 0},   {1, 0, 0},   {-1, 0, 0},  {0, 0, 1},
-        {0, 0, -1}, {-1, -1, -1}, {1, -1, -1}, {0, -1, -1}, {-1, -1, 1},
-        {1, -1, 1}, {0, -1, 1},   {-1, -1, 0}, {1, -1, 0},  {-1, 1, -1},
-        {1, 1, -1}, {0, 1, -1},   {-1, 1, 11}, {1, 1, 1},   {0, 1, 1},
-        {-1, 1, 0}, {1, 1, 0},    {-1, 0, -1}, {1, 0, -1},  {-1, 0, 1},
-        {1, 0, 1},
+        {0, 1, 0},   {0, -1, 0},  {1, 0, 0},   {-1, 0, 0},  {0, 0, 1},  {0, 0, -1},  {-1, -1, -1},
+        {1, -1, -1}, {0, -1, -1}, {-1, -1, 1}, {1, -1, 1},  {0, -1, 1}, {-1, -1, 0}, {1, -1, 0},
+        {-1, 1, -1}, {1, 1, -1},  {0, 1, -1},  {-1, 1, 11}, {1, 1, 1},  {0, 1, 1},   {-1, 1, 0},
+        {1, 1, 0},   {-1, 0, -1}, {1, 0, -1},  {-1, 0, 1},  {1, 0, 1},
     };
+    // CUBE GEN ATTRIBUTES
     unsigned int num_cubes;
     unsigned int side_length;
     unsigned int nv;
     unsigned int ni;
-    // float cells[20][20][20];
     vector<vector<vector<float>>> cells_vec;
+    // OPENGL ATTRIBUTES
     VertexBuffer *vb;
     Shader *sh;
     Camera *cam;
+    bool LIGHTING_ENABLED;
+    // CA ATTIBUTES
     vector<float> stay_alive;
     vector<float> born;
     float lifecycle;
@@ -63,6 +64,8 @@ class Object {
     ~Object() { delete[] cubes; };
 
     Cube *genCubes(int side_cube) {
+        // @Function: genCubes generates cube mesh of 
+        //            size side_cube*side_cube*side_cube
         Cube *cubes = new Cube[side_cube * side_cube * side_cube];
         vector<float> base_verts = {
             1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0, 0.0, 1.0, 0.0, 0.0,
@@ -75,41 +78,31 @@ class Object {
             4, 6, 7, 4, 7, 5, 0, 4, 5, 0, 5, 1, 1, 5, 7, 1, 7, 3,
         };
 
-        // @Function: generates cube of <num cubes> side length
-        // @Param: side_cube - num of cubes per side of big cube
-        // @Return: void
         for (int z = 0; z < side_cube; z++) {
             for (int y = 0; y < side_cube; y++) {
                 for (int x = 0; x < side_cube; x++) {
                     for (int i = 0; i < 8; i++) {
-                        cubes[z * side_cube * side_cube + y * side_cube + x]
-                            .vertices[i] =
+                        cubes[z * side_cube * side_cube + y * side_cube + x].vertices[i] =
                             glm::vec3(base_verts[i * 7] + float(x),
                                       base_verts[i * 7 + 1] + float(y),
                                       base_verts[i * 7 + 2] + float(z));
-                        cubes[z * side_cube * side_cube + y * side_cube + x]
-                            .colors[i] = glm::vec4(
-                            base_verts[i * 7 + 3], base_verts[i * 7 + 4],
-                            base_verts[i * 7 + 5], base_verts[i * 7 + 6]);
+                        cubes[z * side_cube * side_cube + y * side_cube + x].colors[i] =
+                            glm::vec4(base_verts[i * 7 + 3], base_verts[i * 7 + 4],
+                                      base_verts[i * 7 + 5], base_verts[i * 7 + 6]);
                     }
                     for (int i = 0; i < 36; i++) {
-                        cubes[z * side_cube * side_cube + y * side_cube + x]
-                            .indices[i] =
-                            bse_inds[i] +
-                            (z * side_cube * side_cube + y * side_cube + x) * 8;
+                        cubes[z * side_cube * side_cube + y * side_cube + x].indices[i] =
+                            bse_inds[i] + (z * side_cube * side_cube + y * side_cube + x) * 8;
                     }
                 }
             }
         }
-
-        vector<float> combo_verts;
-        // iterate over all cubes and calculate normals per triangle
-
         cout << "[status] Cubes generated" << endl;
         return cubes;
     }
 
     void readRuleset() {
+        // @Function: readRuleset reads the ruleset from a file
         int na, nb;
         string fn = "./configs/rule_set.ca", ruleset;
         fstream istr(fn.c_str());
@@ -125,30 +118,25 @@ class Object {
         istr >> lifecycle;
     }
 
-    void read(string filename, int sl = 20, Camera *camera = 0) {
+    void read(string vertex_shader, string fragment_shader, bool LIGHTING_ENABLED, int sl = 20, Camera *camera = 0) {
         this->num_cubes = sl * sl * sl;
+        this->LIGHTING_ENABLED = LIGHTING_ENABLED;
         nv = num_cubes * 8, ni = num_cubes * 12;
         cout << "[status] Num Cubes: " << num_cubes << endl;
-        // this->cubes = new Cube[num_cubes];
         side_length = sl; // cbrt(num_cubes);
         Cube *cubegen = genCubes(side_length);
         cout << "[status] Side Length: " << side_length << endl;
         cells_vec = vector<vector<vector<float>>>(
-            side_length, vector<vector<float>>(
-                             side_length, vector<float>(side_length, 0.0f)));
+            side_length, vector<vector<float>>(side_length, vector<float>(side_length, 0.0f)));
 
-        // init certain cubes --> need to figure this out
+        // init 'sphere' of cubes 
         for (int z = 0; z < side_length; z++) {
             for (int y = 0; y < side_length; y++) {
                 for (int x = 0; x < side_length; x++) {
-                    if (sqrt((x - side_length / 2.0f) *
-                                 (x - side_length / 2.0f) +
-                             (y - side_length / 2.0f) *
-                                 (y - side_length / 2.0f) +
-                             (z - side_length / 2.0f) *
-                                 (z - side_length / 2.0f)) <= 3.0f) {
-                        int curr =
-                            x + side_length * y + side_length * side_length * z;
+                    if (sqrt((x - side_length / 2.0f) * (x - side_length / 2.0f) +
+                             (y - side_length / 2.0f) * (y - side_length / 2.0f) +
+                             (z - side_length / 2.0f) * (z - side_length / 2.0f)) <= 5.0f) {
+                        int curr = x + side_length * y + side_length * side_length * z;
                         for (int i = 0; i < 8; i++)
                             cubegen[(int)curr].colors[i].w = 1.0f;
                     }
@@ -170,27 +158,17 @@ class Object {
                 cubegen[(int)curr].colors[i].w = 1.0f;
         }
         for (int z = 0; z < side_length; z++) {
-            float curr = (side_length / 2.0) +
-                         side_length * (side_length / 2.0) +
+            float curr = (side_length / 2.0) + side_length * (side_length / 2.0) +
                          side_length * side_length * z;
             for (int i = 0; i < 8; i++)
                 cubegen[(int)curr].colors[i].w = 1.0f;
         }
 
-        // for(int i =0; i < side_length*20; i++){
-        //     int x = rand()%side_length,y = rand()%side_length,z =
-        //     rand()%side_length;
-        //     int curr = x+side_length*y+side_length*side_length*z;
-        //     for(int i = 0; i < 8; i++) cubegen[(int)curr].colors[i].w = 1.0f;
-        // }
-
-        // populate cells so we can get next gen
+        // populate cells so we can get next gen during update stage
         for (int z = 0; z < side_length; z++) {
             for (int y = 0; y < side_length; y++) {
                 for (int x = 0; x < side_length; x++) {
-                    float curr =
-                        x + side_length * y + side_length * side_length * z;
-                    // cells[z][y][x] = cubegen[(int)curr].colors[0].w;
+                    float curr = x + side_length * y + side_length * side_length * z;
                     cells_vec[z][y][x] = cubegen[(int)curr].colors[0].w;
                 }
             }
@@ -198,27 +176,30 @@ class Object {
 
         vector<float> vertices;
         vector<unsigned int> indices;
-        glm::vec3 *verts = new glm::vec3[nv];
+        glm::vec3 *verts = new glm::vec3[nv]; // used when lighting is enabled
         for (int i = 0; i < num_cubes; i++) {
             for (int j = 0; j < 8; j++) {
                 vertices.push_back(cubegen[i].vertices[j].x);
                 vertices.push_back(cubegen[i].vertices[j].y);
                 vertices.push_back(cubegen[i].vertices[j].z);
+                vertices.push_back(cubegen[i].colors[j].x);
+                vertices.push_back(cubegen[i].colors[j].y);
+                vertices.push_back(cubegen[i].colors[j].z);
+                vertices.push_back(cubegen[i].colors[j].w);
                 verts[i * 8 + j] = cubegen[i].vertices[j];
             }
             for (int j = 0; j < 36; j++) {
                 indices.push_back(cubegen[i].indices[j]);
             }
         }
-        int nt = 12 * side_length * side_length * side_length;
+        int nt = 12 * side_length * side_length * side_length; 
         vector<glm::vec3> shaded_verts(nt * 3);
         vector<glm::vec4> shaded_norms(nt * 3);
         for (int i = 0; i < nt; i++) {
-            // calc normal between vertices[indices[i*3]] and
-            // vertices[indices[i*3+1]]
-            glm::vec3 norm = glm::normalize(glm::cross(
-                verts[indices[i * 3 + 2]] - verts[indices[i * 3 + 1]],
-                verts[indices[i * 3]] - verts[indices[i * 3 + 1]]));
+            // calc normal of each triangle and push v1,v2,v3+norm to buffer
+            glm::vec3 norm =
+                glm::normalize(glm::cross(verts[indices[i * 3 + 2]] - verts[indices[i * 3 + 1]],
+                                          verts[indices[i * 3]] - verts[indices[i * 3 + 1]]));
             glm::vec4 exp_normal = glm::vec4(norm.x, norm.y, norm.z, 0.0f);
             for (int j = 0; j < 3; j++) {
                 shaded_verts[i * 3 + j] = verts[indices[i * 3 + j]];
@@ -236,45 +217,31 @@ class Object {
             final_vertices.push_back(shaded_norms[i].z);
             final_vertices.push_back(shaded_norms[i].w);
         }
+
         for (int z = 0; z < side_length; z++) {
             for (int y = 0; y < side_length; y++) {
                 for (int x = 0; x < side_length; x++) {
-                    if (sqrt((x - side_length / 2.0f) *
-                                 (x - side_length / 2.0f) +
-                             (y - side_length / 2.0f) *
-                                 (y - side_length / 2.0f) +
-                             (z - side_length / 2.0f) *
-                                 (z - side_length / 2.0f)) <= 5) {
-                        int curr =
-                            x + side_length * y + side_length * side_length * z;
-                        for (int i = 0; i < 8; i++)
-                            cubegen[(int)curr].colors[i].w = 1.0f;
-                    }
-                }
-            }
-        }
-        for (int z = 0; z < side_length; z++) {
-            for (int y = 0; y < side_length; y++) {
-                for (int x = 0; x < side_length; x++) {
-                    float curr =
-                        x + side_length * y + side_length * side_length * z;
+                    float curr = x + side_length * y + side_length * side_length * z;
                     cells_vec[z][y][x] = cubegen[(int)curr].colors[0].w;
-                    for (int i = 0; i < 36; i++) {
-                        final_vertices[(7 * 36 * curr) + i * 7 + 6] = 1.0f;
+                    if (LIGHTING_ENABLED){
+                        for (int i = 0; i < 36; i++) {
+                            final_vertices[(7 * 36 * curr) + i * 7 + 6] =
+                                cubegen[(int)curr].colors[0].w;
+                        }
                     }
                 }
             }
         }
         readRuleset();
         cam = camera;
-        sh = new Shader("./shaders/shader.vs", "./shaders/shader.fs");
-        vb = new VertexBuffer(3 * nt, final_vertices.data());
+        sh = new Shader(vertex_shader.c_str(), fragment_shader.c_str()) ;
+        vb = LIGHTING_ENABLED ? new VertexBuffer(3 * nt, final_vertices.data()) : vb = new VertexBufferIndex(nv, vertices.data(),3*ni, (unsigned int *)indices.data());
     };
 
     // method checks if inBounds
     bool inBounds(int x, int y, int z) {
-        return (x >= 0 && x < side_length && y >= 0 && y < side_length &&
-                z >= 0 && z < side_length);
+        return (x >= 0 && x < side_length && y >= 0 && y < side_length && z >= 0 &&
+                z < side_length);
     }
 
     void updateBuffer(int x, int y, int z, float val) {
@@ -285,10 +252,10 @@ class Object {
         else if (val <= 0.0f)
             val = 0.0f;
         float d[1] = {val};
-        for (int i = 0; i < 36; i++) {
+        int top = LIGHTING_ENABLED ? 36 : 8;
+        for (int i = 0; i < top; i++) {
             glBufferSubData(GL_ARRAY_BUFFER,
-                            (7 * 36 * 4 * flat) + i * 7 * sizeof(float) +
-                                6 * sizeof(float),
+                            (7 * top * 4 * flat) + i * 7 * sizeof(float) + 6 * sizeof(float),
                             1 * sizeof(float), d);
         }
     }
@@ -305,11 +272,8 @@ class Object {
 
     void update() {
         float next_gen[side_length][side_length][side_length];
-        vector<vector<vector<float>>> next_gen_vec =
-            vector<vector<vector<float>>>(
-                side_length,
-                vector<vector<float>>(side_length,
-                                      vector<float>(side_length, 0.0f)));
+        vector<vector<vector<float>>> next_gen_vec = vector<vector<vector<float>>>(
+            side_length, vector<vector<float>>(side_length, vector<float>(side_length, 0.0f)));
         for (int z = 0; z < side_length; z++) {
             for (int y = 0; y < side_length; y++) {
                 for (int x = 0; x < side_length; x++) {
@@ -319,8 +283,7 @@ class Object {
                         // up,down,left,right,back,front
                         for (auto i : mooreN) {
                             if (inBounds(x + i[0], y + i[1], z + i[2]) &&
-                                cells_vec[z + i[2]][y + i[1]][x + i[0]] >=
-                                    1.0f) {
+                                cells_vec[z + i[2]][y + i[1]][x + i[0]] >= 1.0f) {
                                 ncount++;
                             }
                         }
@@ -333,8 +296,7 @@ class Object {
                         int ncount = 0;
                         for (auto i : mooreN) {
                             if (inBounds(x + i[0], y + i[1], z + i[2]) &&
-                                cells_vec[z + i[2]][y + i[1]][x + i[0]] >=
-                                    1.0f) {
+                                cells_vec[z + i[2]][y + i[1]][x + i[0]] >= 1.0f) {
                                 ncount++;
                             }
                         }
@@ -369,12 +331,13 @@ class Object {
     void draw() {
         sh->use();
         sh->setMat4("pvm", cam->pvm());
-        sh->setMat4("model", cam->getModel());
-        sh->setVec3("eye", cam->eye.x, cam->eye.y, cam->eye.z);
+        if (LIGHTING_ENABLED) sh->setMat4("model", cam->getModel());
+        if (LIGHTING_ENABLED) sh->setVec3("eye", cam->eye.x, cam->eye.y, cam->eye.z);
         sh->setFloat("side_length", side_length - (side_length / 2.0f));
         vb->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * 8000);
+        if (LIGHTING_ENABLED) glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * 8000);
+        else glDrawElements(GL_TRIANGLES,12*num_cubes*3, GL_UNSIGNED_INT, 0);
     }
 };
 
