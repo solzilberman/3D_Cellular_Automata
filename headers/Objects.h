@@ -16,6 +16,7 @@ Encapsulation of all objects in the program.
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <set>
 using namespace std;
 
 // @Class: Cube Entity
@@ -58,6 +59,8 @@ class Object {
     // CA ATTIBUTES
     vector<float> stay_alive;
     vector<float> born;
+    set<float> stay_alive_set;
+    set<float> born_set;
     float lifecycle;
 
     Object(){};
@@ -116,6 +119,9 @@ class Object {
             istr >> born[i];
         }
         istr >> lifecycle;
+        stay_alive_set = set<float>(stay_alive.begin(), stay_alive.end());
+        born_set = set<float>(born.begin(), born.end());
+
     }
 
     void read(string vertex_shader, string fragment_shader, bool LIGHTING_ENABLED, int sl = 20, Camera *camera = 0) {
@@ -145,24 +151,24 @@ class Object {
         }
 
         // make cross of cells
-        for (int y = 0; y < side_length; y++) {
-            float curr = (side_length / 2.0) + side_length * y +
-                         side_length * side_length * (side_length / 2.0);
-            for (int i = 0; i < 8; i++)
-                cubegen[(int)curr].colors[i].w = 1.0f;
-        }
-        for (int x = 0; x < side_length; x++) {
-            float curr = x + side_length * (side_length / 2.0) +
-                         side_length * side_length * (side_length / 2.0);
-            for (int i = 0; i < 8; i++)
-                cubegen[(int)curr].colors[i].w = 1.0f;
-        }
-        for (int z = 0; z < side_length; z++) {
-            float curr = (side_length / 2.0) + side_length * (side_length / 2.0) +
-                         side_length * side_length * z;
-            for (int i = 0; i < 8; i++)
-                cubegen[(int)curr].colors[i].w = 1.0f;
-        }
+        // for (int y = 0; y < side_length; y++) {
+        //     float curr = (side_length / 2.0) + side_length * y +
+        //                  side_length * side_length * (side_length / 2.0);
+        //     for (int i = 0; i < 8; i++)
+        //         cubegen[(int)curr].colors[i].w = 1.0f;
+        // }
+        // for (int x = 0; x < side_length; x++) {
+        //     float curr = x + side_length * (side_length / 2.0) +
+        //                  side_length * side_length * (side_length / 2.0);
+        //     for (int i = 0; i < 8; i++)
+        //         cubegen[(int)curr].colors[i].w = 1.0f;
+        // }
+        // for (int z = 0; z < side_length; z++) {
+        //     float curr = (side_length / 2.0) + side_length * (side_length / 2.0) +
+        //                  side_length * side_length * z;
+        //     for (int i = 0; i < 8; i++)
+        //         cubegen[(int)curr].colors[i].w = 1.0f;
+        // }
 
         // populate cells so we can get next gen during update stage
         for (int z = 0; z < side_length; z++) {
@@ -287,12 +293,14 @@ class Object {
                                 ncount++;
                             }
                         }
-                        if (ncount == 4) {
+                        if (stay_alive_set.find(ncount) != stay_alive_set.end()) {
                             next_gen_vec[z][y][x] = lifecycle;
                         } else {
                             next_gen_vec[z][y][x] = cells_vec[z][y][x] - 1.0f;
                         }
-                    } else {
+                    } else if (curr > 1.0f){
+                            next_gen_vec[z][y][x] = cells_vec[z][y][x] - 1.0f;
+                    }else {
                         int ncount = 0;
                         for (auto i : mooreN) {
                             if (inBounds(x + i[0], y + i[1], z + i[2]) &&
@@ -300,7 +308,7 @@ class Object {
                                 ncount++;
                             }
                         }
-                        if (ncount == 4) {
+                        if (born_set.find(ncount) != born_set.end()) {
                             next_gen_vec[z][y][x] = lifecycle;
                         } else {
                             next_gen_vec[z][y][x] = 0.0f;

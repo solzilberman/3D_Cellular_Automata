@@ -70,7 +70,7 @@ void display() {
 	else glClearColor(1, 1, 1, 1);
     cubes->draw();
     if (animation) {
-        if (tt % 15 == 0) {
+        if (tt % 5 == 0) {
             tt = 0;
             cubes->update();
         }
