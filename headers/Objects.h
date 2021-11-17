@@ -127,21 +127,70 @@ class Object {
     };
 
     const vector<vector<float>> vonN = {
-        {-1,0,0},
-        {0,-1,0},
-        {0,0,-1},
-        {1,0,0},
-        {0,1,0},
-        {0,0,1},
+        {-1, 0, 0}, {0, -1, 0}, {0, 0, -1}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1},
     };
+
+    vector<float> base_verts = {
+        1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0, 0.0, 1.0, 0.0, 0.0,
+        1.0, 0,   1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0,   0, 0.0, 0.0, 1.0, 0.0,
+        0,   1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0,   1.0, 0, 0.0, 1.0, 0.0, 0.0,
+        0,   0,   1.0, 0.0, 0.0, 1.0, 0.0, 0,   0,   0, 0.0, 1.0, 0.0, 0.0,
+    };
+    vector<unsigned int> bse_inds = {
+        0, 6, 4, 0, 2, 6, 0, 3, 2, 0, 1, 3, 2, 7, 6, 2, 3, 7,
+        4, 6, 7, 4, 7, 5, 0, 4, 5, 0, 5, 1, 1, 5, 7, 1, 7, 3,
+    };
+
+    vector<vector<float>> pos_norms = {
+        {1,1,1,0,0,-1,1.0f},
+        {0,0,1,0,0,-1,1.0f},
+        {0,1,1,0,0,-1,1.0f},
+        {1,1,1,0,0,-1,1.0f},
+        {1,0,1,0,0,-1,1.0f},
+        {0,0,1,0,0,-1,1.0f},
+        {1,1,1,-1,0,0,1.0f},
+        {1,0,0,-1,0,0,1.0f},
+        {1,0,1,-1,0,0,1.0f},
+        {1,1,1,-1,0,0,1.0f},
+        {1,1,0,-1,0,0,1.0f},
+        {1,0,0,-1,0,0,1.0f},
+         {1,0,1,0,1,0,1.0f},
+         {0,0,0,0,1,0,1.0f},
+         {0,0,1,0,1,0,1.0f},
+        {1,0,1,0,1,-0,1.0f},
+        {1,0,0,0,1,-0,1.0f},
+        {0,0,0,0,1,-0,1.0f},
+        {0,1,1,1,-0,0,1.0f},
+        {0,0,1,1,-0,0,1.0f},
+        {0,0,0,1,-0,0,1.0f},
+         {0,1,1,1,0,0,1.0f},
+         {0,0,0,1,0,0,1.0f},
+         {0,1,0,1,0,0,1.0f},
+        {1,1,1,0,-1,0,1.0f},
+        {0,1,1,0,-1,0,1.0f},
+        {0,1,0,0,-1,0,1.0f},
+        {1,1,1,0,-1,0,1.0f},
+        {0,1,0,0,-1,0,1.0f},
+        {1,1,0,0,-1,0,1.0f},
+        {1,1,0,-0,0,1,1.0f},
+        {0,1,0,-0,0,1,1.0f},
+        {0,0,0,-0,0,1,1.0f},
+        {1,1,0,0,0,1,1.0},
+        {0,0,0,0,0,1,1.0},
+        {1,0,0,0,0,1,1.0},
+    };
+
     // CUBE GEN ATTRIBUTES
     unsigned int num_cubes;
     unsigned int side_length;
     unsigned int nv;
     unsigned int ni;
     vector<vector<vector<float>>> cells_vec;
+    vector<glm::vec3> translations;
+
     // OPENGL ATTRIBUTES
     VertexBuffer *vb;
+    VertexBufferInstanced *vbi;
     Shader *sh;
     Camera *cam;
     bool LIGHTING_ENABLED;
@@ -161,16 +210,6 @@ class Object {
         // @Function: genCubes generates cube mesh of
         //            size side_cube*side_cube*side_cube
         Cube *cubes = new Cube[side_cube * side_cube * side_cube];
-        vector<float> base_verts = {
-            1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0, 0.0, 1.0, 0.0, 0.0,
-            1.0, 0,   1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0,   0, 0.0, 0.0, 1.0, 0.0,
-            0,   1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0,   1.0, 0, 0.0, 1.0, 0.0, 0.0,
-            0,   0,   1.0, 0.0, 0.0, 1.0, 0.0, 0,   0,   0, 0.0, 1.0, 0.0, 0.0,
-        };
-        vector<unsigned int> bse_inds = {
-            0, 6, 4, 0, 2, 6, 0, 3, 2, 0, 1, 3, 2, 7, 6, 2, 3, 7,
-            4, 6, 7, 4, 7, 5, 0, 4, 5, 0, 5, 1, 1, 5, 7, 1, 7, 3,
-        };
 
         for (int z = 0; z < side_cube; z++) {
             for (int y = 0; y < side_cube; y++) {
@@ -334,12 +373,23 @@ class Object {
                 }
             }
         }
+
+        // for (int i = 0; i < 36; i++) {
+        //     cout << "{";
+        //     cout << final_vertices[i * 7] << "," << final_vertices[i * 7 + 1] << ","
+        //          << final_vertices[i * 7 + 2] << "," << final_vertices[i * 7 + 3] << ","
+        //          << final_vertices[i * 7 + 4] << "," << final_vertices[i * 7 + 5] << ","
+        //          << final_vertices[i * 7 + 6] << "}," << endl;;
+        // }
+
         readRuleset(rule);
         cam = camera;
         sh = new Shader(vertex_shader.c_str(), fragment_shader.c_str());
-        vb = LIGHTING_ENABLED ? new VertexBuffer(3 * nt, final_vertices.data())
-                              : vb = new VertexBufferIndex(nv, vertices.data(), 3 * ni,
-                                                           (unsigned int *)indices.data());
+        vb = LIGHTING_ENABLED ? new VertexBuffer(3 * 12, (float *) pos_norms.data())
+                               : vb = new VertexBufferIndex(nv, vertices.data(), 3 * ni,
+                                                            (unsigned int *)indices.data());
+        vbi = new VertexBufferInstanced(num_cubes);
+
     };
 
     // method checks if inBounds
@@ -393,11 +443,18 @@ class Object {
                         }
                         if (stay_alive_set.find(ncount) != stay_alive_set.end()) {
                             next_gen_vec[z][y][x] = lifecycle;
+                            translations.push_back(glm::vec3(x, y, z));
                         } else {
                             next_gen_vec[z][y][x] = cells_vec[z][y][x] - 1.0f;
+                            if (next_gen_vec[z][y][x] > 0.0f) {
+                                translations.push_back(glm::vec3(x, y, z));
+                            }
                         }
                     } else if (curr > 1.0f) {
                         next_gen_vec[z][y][x] = cells_vec[z][y][x] - 1.0f;
+                        if (next_gen_vec[z][y][x] > 0.0f) {
+                            translations.push_back(glm::vec3(x, y, z));
+                        }
                     } else {
                         int ncount = 0;
                         for (auto i : mooreN) {
@@ -408,6 +465,7 @@ class Object {
                         }
                         if (born_set.find(ncount) != born_set.end()) {
                             next_gen_vec[z][y][x] = lifecycle;
+                            translations.push_back(glm::vec3(x, y, z));
                         } else {
                             next_gen_vec[z][y][x] = 0.0f;
                         }
@@ -415,8 +473,6 @@ class Object {
                 }
             }
         }
-
-        //instace draw call
 
         // now lets update buffer based on nextgen
         for (int z = 0; z < side_length; z++) {
@@ -453,12 +509,21 @@ class Object {
         if (LIGHTING_ENABLED)
             sh->setVec3("eye", cam->eye.x, cam->eye.y, cam->eye.z);
         sh->setFloat("side_length", side_length - (side_length / 2.0f));
+
+        vbi->use();
+        std::cout.flush();
+
+        cout << translations.size() << endl;
+        glBufferSubData(GL_ARRAY_BUFFER, 0, 3u*sizeof(float) * translations.size(), translations.data());
         vb->use();
+        vbi->use();
+
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        if (LIGHTING_ENABLED)
-            glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * num_cubes);
-        else
-            glDrawElements(GL_TRIANGLES, 12 * num_cubes * 3, GL_UNSIGNED_INT, 0);
+        // if (LIGHTING_ENABLED)
+        //     glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * num_cubes);
+        // else
+        //     glDrawElements(GL_TRIANGLES, 12 * num_cubes * 3, GL_UNSIGNED_INT, 0);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 3 * 12, translations.size());
     }
 };
 

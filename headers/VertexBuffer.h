@@ -3,33 +3,28 @@
 #include <GL/glew.h>
 
 class VertexBufferInstanced {
-    unsigned int vbo, vao;
+    unsigned int ibo, iao;
 
   public:
     float *vertices;
-    VertexBufferInstanced(unsigned int nv, float *vs) {
-        unsigned long stride = 7u * sizeof(float);
-        vertices = vs;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, stride * nv, vs, GL_DYNAMIC_DRAW);
+    VertexBufferInstanced(unsigned int nc) {
 
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void *)0);
-        glEnableVertexAttribArray(0);
-
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, stride,
-                              (void *)(3u * sizeof(float)));
-        glEnableVertexAttribArray(1);
+        unsigned long tstride = 3u*sizeof(float);
+        glGenBuffers(1, &ibo);
+        glBindBuffer(GL_ARRAY_BUFFER, ibo);
+        glBufferData(GL_ARRAY_BUFFER, tstride*nc, nullptr,
+                     GL_DYNAMIC_DRAW);
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 1000000*tstride, (void *) 0);
+        glVertexAttribDivisor(2, 1);
     }
 
     void free() {
-        glDeleteBuffers(1, &vbo);
-        glDeleteVertexArrays(1, &vao);
+        glDeleteBuffers(1, &ibo);
+        glDeleteVertexArrays(1, &iao);
     }
 
-    void use() { glBindVertexArray(vao); }
+    void use() { glBindVertexArray(iao); }
 };
 class VertexBuffer {
     unsigned int vbo, vao;
