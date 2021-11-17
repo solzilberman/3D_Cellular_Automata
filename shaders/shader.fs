@@ -6,6 +6,7 @@ in vec3 pw;
 uniform bool is_wire;
 uniform float side_length;
 uniform vec3 eye;
+// uniform float time;
 
 vec3 lighting()
 {
@@ -30,7 +31,7 @@ vec3 lighting()
     vec3 amb = vec3(red,green,blue);
     vec3 diff = vec3(red,green,blue);
     vec3 spec = vec3(red,green,blue);
-    vec3 lpos = vec3(15, 15, 15);
+    vec3 lpos = vec3(10, 10, 10);
     float kl = 0;
     float kq = .01;
     //d s ns

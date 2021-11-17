@@ -21,17 +21,19 @@ using namespace std;
 #define SCREEN_WIDTH 500
 #define SCREEN_HEIGHT 500
 #define GLM_ENABLE_EXPERIMENTAL
+
 int nv = 8;
 int ni = 12;
 float fstep = 0.9f;
 float near = 5.0f;
-float far = 100.0f;
+float far = 150.0f;
 float fovy = 45.0f;
 float aspect = SCREEN_HEIGHT / SCREEN_WIDTH;
 bool rotation = false, animation = false;
 bool LIGHTING_ENABLED = true;
 string VSHADER_PATH = "./shaders/shader.vs";
 string FSHADER_PATH = "./shaders/shader.fs";
+int rule;
 int tt = 0;
 
 // init config
@@ -66,8 +68,10 @@ WireFrame *wf;
 void display() {
     // clear the color buffer before each drawing
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    if (LIGHTING_ENABLED) glClearColor(0, 0, 0, 0);
-	else glClearColor(1, 1, 1, 1);
+    if (LIGHTING_ENABLED)
+        glClearColor(0, 0, 0, 0);
+    else
+        glClearColor(1, 1, 1, 1);
     cubes->draw();
     if (animation) {
         if (tt % 5 == 0) {
@@ -144,9 +148,12 @@ void Timer(int value) {
 void readConfig(string filename) {
     ifstream istr(filename);
     istr >> side_length;
-	istr >> LIGHTING_ENABLED;
-	VSHADER_PATH = LIGHTING_ENABLED ? "./shaders/shader.vs" : "./shaders/shader_nl.vs";
-	FSHADER_PATH = LIGHTING_ENABLED ? "./shaders/shader.fs" : "./shaders/shader_nl.fs";
+    istr >> LIGHTING_ENABLED;
+    istr >> rule;
+    istr >> animation;
+    istr >> rotation;
+    VSHADER_PATH = LIGHTING_ENABLED ? "./shaders/shader.vs" : "./shaders/shader_nl.vs";
+    FSHADER_PATH = LIGHTING_ENABLED ? "./shaders/shader.fs" : "./shaders/shader_nl.fs";
 }
 
 void init() {
@@ -175,19 +182,35 @@ void init() {
 // main function
 // sets up window to which we'll draw
 int main(int argc, char **argv) {
-    if (argc == 3) {
-        string arg1(argv[1]);
-        string arg2(argv[2]);
+    init();
+    string arg1, arg2, arg3;
+    switch (argc) {
+    case 1:
+        break;
+    case 2:
+        arg1 = string(argv[1]);
+        rule = atoi(arg1.c_str());
+        break;
+    case 3:
+        arg1 = string(argv[1]);
+        arg2 = string(argv[2]);
         animation = arg1 == "true";
         rotation = arg2 == "true";
-    }
-    init();
-    c = new Camera(glm::vec3((side_length / 2.0f), side_length + 40.0f,
-                             side_length + 40.0f),
-                   glm::vec3((side_length / 2.0f), 0.0, 0.0),
-                   glm::vec3(0.0, 1.0, 0.0), fovy, aspect, near, far);
-    wf = new WireFrame((float)side_length + 5.0f, c,VSHADER_PATH, FSHADER_PATH);
-    cubes->read(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, side_length, c);
+        break;
+    case 4:
+        arg1 = string(argv[1]);
+        arg2 = string(argv[2]);
+        animation = arg1 == "true";
+        rotation = arg2 == "true";
+        rule = atoi(argv[3]);
+        break;
+    };
+
+    c = new Camera(glm::vec3((side_length / 2.0f), side_length + 40.0f, side_length + 40.0f),
+                   glm::vec3((side_length / 2.0f), 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy,
+                   aspect, near, far);
+    wf = new WireFrame(2.5f, (float)side_length, c, VSHADER_PATH, FSHADER_PATH);
+    cubes->read(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, side_length, c, rule);
     glutMainLoop();
     return 0;
 }

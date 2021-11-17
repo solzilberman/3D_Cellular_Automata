@@ -14,17 +14,17 @@ class WireFrame {
 
     vector<unsigned int> wire_elements;
 
-    WireFrame(float size, Camera *c, string vertex_shader, string fragment_shader) {
+    WireFrame(float size, float side_len, Camera *c, string vertex_shader, string fragment_shader) {
         wire_vertices = {
             // verts			      //colors
-            -5.0f, -5.0f, +size, 0.0, 0.0, 0.0, 1.0, // front bottom left
-            +size, -5.0f, +size, 0.0, 0.0, 0.0, 1.0, // front bottom right
-            +size, +size, +size, 0.0, 0.0, 0.0, 1.0, // front top right
-            -5.0f, +size, +size, 0.0, 0.0, 0.0, 1.0, // front top left
-            -5.0f, -5.0f, -5.0f, 0.0, 0.0, 0.0, 1.0, // back bottom left
-            +size, -5.0f, -5.0f, 0.0, 0.0, 0.0, 1.0, // back bottom right
-            +size, +size, -5.0f, 0.0, 0.0, 0.0, 1.0, // back top right
-            -5.0f, +size, -5.0f, 0.0, 0.0, 0.0, 1.0, // back top left
+            -size, -size, side_len+size, 0.0, 0.0, 0.0, 1.0, // front bottom left
+            side_len+size, -size, side_len+size, 0.0, 0.0, 0.0, 1.0, // front bottom right
+            side_len+size, side_len+size, side_len+size, 0.0, 0.0, 0.0, 1.0, // front top right
+            -size, side_len+size, side_len+size, 0.0, 0.0, 0.0, 1.0, // front top left
+            -size, -size, -size, 0.0, 0.0, 0.0, 1.0, // back bottom left
+            side_len+size, -size, -size, 0.0, 0.0, 0.0, 1.0, // back bottom right
+            side_len+size, side_len+size, -size, 0.0, 0.0, 0.0, 1.0, // back top right
+            -size, side_len+size, -size, 0.0, 0.0, 0.0, 1.0, // back top left
         };
         wire_elements = {0, 1, 1, 2, 2, 3, 3, 0, // Front
                          4, 5, 5, 6, 6, 7, 7, 4, // Back

@@ -17,6 +17,12 @@ Encapsulation of all objects in the program.
 #include <string>
 #include <vector>
 #include <set>
+#include <chrono>
+
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;    
+using std::chrono::milliseconds;
 using namespace std;
 
 // @Class: Cube Entity
@@ -40,10 +46,13 @@ class Object {
   public:
     Cube *cubes;
     const vector<vector<float>> mooreN = {
-        {0, 1, 0},   {0, -1, 0},  {1, 0, 0},   {-1, 0, 0},  {0, 0, 1},  {0, 0, -1},  {-1, -1, -1},
-        {1, -1, -1}, {0, -1, -1}, {-1, -1, 1}, {1, -1, 1},  {0, -1, 1}, {-1, -1, 0}, {1, -1, 0},
-        {-1, 1, -1}, {1, 1, -1},  {0, 1, -1},  {-1, 1, 11}, {1, 1, 1},  {0, 1, 1},   {-1, 1, 0},
-        {1, 1, 0},   {-1, 0, -1}, {1, 0, -1},  {-1, 0, 1},  {1, 0, 1},
+        {-1,-1,-1,},{-1,-1,0,},{-1,-1,1,},{-1,0,-1,},
+        {-1,0,0,},{-1,0,1,},{-1,1,-1,},{-1,1,0,},
+        {-1,1,1,},{0,-1,-1,},{0,-1,0,},{0,-1,1,},
+        {0,0,-1,},{0,0,1,},{0,1,-1,},{0,1,0,},
+        {0,1,1,},{1,-1,-1,},{1,-1,0,},{1,-1,1,},
+        {1,0,-1,},{1,0,0,},{1,0,1,},{1,1,-1,},
+        {1,1,0,},{1,1,1,},
     };
     // CUBE GEN ATTRIBUTES
     unsigned int num_cubes;
@@ -56,6 +65,8 @@ class Object {
     Shader *sh;
     Camera *cam;
     bool LIGHTING_ENABLED;
+    // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    float global_time = 0;
     // CA ATTIBUTES
     vector<float> stay_alive;
     vector<float> born;
@@ -67,7 +78,7 @@ class Object {
     ~Object() { delete[] cubes; };
 
     Cube *genCubes(int side_cube) {
-        // @Function: genCubes generates cube mesh of 
+        // @Function: genCubes generates cube mesh of
         //            size side_cube*side_cube*side_cube
         Cube *cubes = new Cube[side_cube * side_cube * side_cube];
         vector<float> base_verts = {
@@ -104,11 +115,16 @@ class Object {
         return cubes;
     }
 
-    void readRuleset() {
+    void readRuleset(int rule) {
         // @Function: readRuleset reads the ruleset from a file
         int na, nb;
         string fn = "./configs/rule_set.ca", ruleset;
         fstream istr(fn.c_str());
+        string dummy;
+        int counter = 4 * rule;
+        while (counter-- >= 0) {
+            getline(istr, dummy);
+        }
         istr >> na >> nb;
         stay_alive = vector<float>(na);
         born = vector<float>(nb);
@@ -121,10 +137,10 @@ class Object {
         istr >> lifecycle;
         stay_alive_set = set<float>(stay_alive.begin(), stay_alive.end());
         born_set = set<float>(born.begin(), born.end());
-
     }
 
-    void read(string vertex_shader, string fragment_shader, bool LIGHTING_ENABLED, int sl = 20, Camera *camera = 0) {
+    void read(string vertex_shader, string fragment_shader, bool LIGHTING_ENABLED, int sl = 20,
+              Camera *camera = 0, int rule = 0) {
         this->num_cubes = sl * sl * sl;
         this->LIGHTING_ENABLED = LIGHTING_ENABLED;
         nv = num_cubes * 8, ni = num_cubes * 12;
@@ -135,13 +151,13 @@ class Object {
         cells_vec = vector<vector<vector<float>>>(
             side_length, vector<vector<float>>(side_length, vector<float>(side_length, 0.0f)));
 
-        // init 'sphere' of cubes 
+        // init 'sphere' of cubes
         for (int z = 0; z < side_length; z++) {
             for (int y = 0; y < side_length; y++) {
                 for (int x = 0; x < side_length; x++) {
                     if (sqrt((x - side_length / 2.0f) * (x - side_length / 2.0f) +
                              (y - side_length / 2.0f) * (y - side_length / 2.0f) +
-                             (z - side_length / 2.0f) * (z - side_length / 2.0f)) <= 5.0f) {
+                             (z - side_length / 2.0f) * (z - side_length / 2.0f)) <= 3.0f) {
                         int curr = x + side_length * y + side_length * side_length * z;
                         for (int i = 0; i < 8; i++)
                             cubegen[(int)curr].colors[i].w = 1.0f;
@@ -198,7 +214,7 @@ class Object {
                 indices.push_back(cubegen[i].indices[j]);
             }
         }
-        int nt = 12 * side_length * side_length * side_length; 
+        int nt = 12 * side_length * side_length * side_length;
         vector<glm::vec3> shaded_verts(nt * 3);
         vector<glm::vec4> shaded_norms(nt * 3);
         for (int i = 0; i < nt; i++) {
@@ -229,7 +245,7 @@ class Object {
                 for (int x = 0; x < side_length; x++) {
                     float curr = x + side_length * y + side_length * side_length * z;
                     cells_vec[z][y][x] = cubegen[(int)curr].colors[0].w;
-                    if (LIGHTING_ENABLED){
+                    if (LIGHTING_ENABLED) {
                         for (int i = 0; i < 36; i++) {
                             final_vertices[(7 * 36 * curr) + i * 7 + 6] =
                                 cubegen[(int)curr].colors[0].w;
@@ -238,10 +254,12 @@ class Object {
                 }
             }
         }
-        readRuleset();
+        readRuleset(rule);
         cam = camera;
-        sh = new Shader(vertex_shader.c_str(), fragment_shader.c_str()) ;
-        vb = LIGHTING_ENABLED ? new VertexBuffer(3 * nt, final_vertices.data()) : vb = new VertexBufferIndex(nv, vertices.data(),3*ni, (unsigned int *)indices.data());
+        sh = new Shader(vertex_shader.c_str(), fragment_shader.c_str());
+        vb = LIGHTING_ENABLED ? new VertexBuffer(3 * nt, final_vertices.data())
+                              : vb = new VertexBufferIndex(nv, vertices.data(), 3 * ni,
+                                                           (unsigned int *)indices.data());
     };
 
     // method checks if inBounds
@@ -277,6 +295,7 @@ class Object {
     }
 
     void update() {
+        auto t1 = high_resolution_clock::now(); // PERFORMANCE TESTING CODE >:0
         float next_gen[side_length][side_length][side_length];
         vector<vector<vector<float>>> next_gen_vec = vector<vector<vector<float>>>(
             side_length, vector<vector<float>>(side_length, vector<float>(side_length, 0.0f)));
@@ -298,9 +317,9 @@ class Object {
                         } else {
                             next_gen_vec[z][y][x] = cells_vec[z][y][x] - 1.0f;
                         }
-                    } else if (curr > 1.0f){
-                            next_gen_vec[z][y][x] = cells_vec[z][y][x] - 1.0f;
-                    }else {
+                    } else if (curr > 1.0f) {
+                        next_gen_vec[z][y][x] = cells_vec[z][y][x] - 1.0f;
+                    } else {
                         int ncount = 0;
                         for (auto i : mooreN) {
                             if (inBounds(x + i[0], y + i[1], z + i[2]) &&
@@ -317,15 +336,21 @@ class Object {
                 }
             }
         }
+       
         // now lets update buffer based on nextgen
         for (int z = 0; z < side_length; z++) {
             for (int y = 0; y < side_length; y++) {
                 for (int x = 0; x < side_length; x++) {
-                    updateBuffer(x, y, z, next_gen_vec[z][x][y]);
+                    if (next_gen_vec[z][y][x] != cells_vec[z][y][x]) {
+                        updateBuffer(x, y, z, next_gen_vec[z][y][x]);
+                    }
                 }
             }
         }
-
+        auto t2 = high_resolution_clock::now();
+        duration<double, std::milli> ms_double = t2 - t1; 
+        std::cout.flush(); 
+        cout << ms_double.count() << "ms" << endl; // END PERFORMANCE TESTING CODE >:0
         cells_vec = next_gen_vec;
         next_gen_vec.clear();
     };
@@ -337,15 +362,22 @@ class Object {
     }
 
     void draw() {
+        // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        // float tt = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
         sh->use();
         sh->setMat4("pvm", cam->pvm());
-        if (LIGHTING_ENABLED) sh->setMat4("model", cam->getModel());
-        if (LIGHTING_ENABLED) sh->setVec3("eye", cam->eye.x, cam->eye.y, cam->eye.z);
+        // sh->setFloat("time", tt);
+        if (LIGHTING_ENABLED)
+            sh->setMat4("model", cam->getModel());
+        if (LIGHTING_ENABLED)
+            sh->setVec3("eye", cam->eye.x, cam->eye.y, cam->eye.z);
         sh->setFloat("side_length", side_length - (side_length / 2.0f));
         vb->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        if (LIGHTING_ENABLED) glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * 8000);
-        else glDrawElements(GL_TRIANGLES,12*num_cubes*3, GL_UNSIGNED_INT, 0);
+        if (LIGHTING_ENABLED)
+            glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * num_cubes);
+        else
+            glDrawElements(GL_TRIANGLES, 12 * num_cubes * 3, GL_UNSIGNED_INT, 0);
     }
 };
 

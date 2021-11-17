@@ -1,8 +1,14 @@
-[side length of world] 
-[lighting enabled]     
+[Side Length of World -        10-50>] 
+[Lighting Enabled     -      <0 or 1>]      
+[CA Rule              -         <0-5>]
+[Animation Enabled    -  <true/false>]
+[Rotation Enabled     -  <true/false>]
 
 example config './config':
 -----------------------------------
 20
 1
+0
+false
+false
 -----------------------------------
