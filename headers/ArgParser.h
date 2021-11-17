@@ -30,15 +30,21 @@ bool cmdOptionExists(char **begin, char **end, const std::string &option) {
 void printHelpMenu() {
     cout << "Welcome to 3D CA in OpenGL :)" << endl;
     cout << "Usage:" << endl;
-    cout << "  ./main --animation true --rotation true --rulenum 10" << endl;
-    cout << "  ./main --rulenum 10 --sidelength 20" << endl;
-    cout << "  ./main -a true -r false -rn 8" << endl;
-    cout << "Options:" << endl;
-    cout << "  -h    --help        Enable\\Disable Animation" << endl;
-    cout << "  -a    --animation   Enable\\Disable Animation" << endl;
-    cout << "  -r    --rotation    Enable\\Disable Rotation" << endl;
-    cout << "  -rn   --rulenum     CA rule number [0-10]" << endl;
-    cout << "  -s    --sidelength  Length of side of CUBE-WORLD" << endl;
+    cout << "  ./main [@bool animation enabled] [@bool rotation enabled] [@int rule number] [@int "
+            "side length] [@int animstep]"
+         << endl;
+    cout << "  ./main [@bool animation enabled] [@bool rotation enabled] [@int rule number] [@int "
+            "side length]"
+         << endl;
+    cout << "  ./main [@bool animation enabled] [@bool rotation enabled] [@int rule number]"
+         << endl;
+    cout << "  ./main [@bool animation enabled] [@bool rotation enabled]" << endl;
+    cout << "  ./main [@int rule number]" << endl;
+    cout << "  ./main" << endl;
+    cout << "Example Usage:" << endl;
+    cout << "  ./main true false 10" << endl;
+    cout << "  ./main 6" << endl;
+    cout << "  ./main true true 10 20 5" << endl;
     exit(1);
 };
 

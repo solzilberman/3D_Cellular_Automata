@@ -161,9 +161,9 @@ void readConfig(string filename) {
 
 void procArgs(int argc, char **argv) {
 
-	string arg1, arg2, arg3;
+    string arg1, arg2, arg3;
     switch (argc) {
-	
+
     case 2:
         arg1 = string(argv[1]);
         RULE = atoi(arg1.c_str());
@@ -189,7 +189,7 @@ void procArgs(int argc, char **argv) {
         RULE = atoi(argv[3]);
         SIDE_LENGTH = atoi(argv[4]);
         break;
-	case 6:
+    case 6:
         arg1 = string(argv[1]);
         arg2 = string(argv[2]);
         animation = arg1 == "true";
@@ -227,12 +227,11 @@ void init() {
 // main function
 // sets up window to which we'll draw
 int main(int argc, char **argv) {
-	if(cmdOptionExists(argv, argv+argc, "-h"))
-    {
-       printHelpMenu();
+    if (cmdOptionExists(argv, argv + argc, "-h")) {
+        printHelpMenu();
     }
     init();
-	procArgs(argc, argv);
+    procArgs(argc, argv);
     c = new Camera(glm::vec3((SIDE_LENGTH / 2.0f), SIDE_LENGTH + 40.0f, SIDE_LENGTH + 40.0f),
                    glm::vec3((SIDE_LENGTH / 2.0f), 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy,
                    aspect, near, far);

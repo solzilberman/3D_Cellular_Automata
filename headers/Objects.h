@@ -21,7 +21,7 @@ Encapsulation of all objects in the program.
 
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
-using std::chrono::duration;    
+using std::chrono::duration;
 using std::chrono::milliseconds;
 using namespace std;
 
@@ -46,14 +46,94 @@ class Object {
   public:
     Cube *cubes;
     const vector<vector<float>> mooreN = {
-        {-1,-1,-1,},{-1,-1,0,},{-1,-1,1,},{-1,0,-1,},
-        {-1,0,0,},{-1,0,1,},{-1,1,-1,},{-1,1,0,},
-        {-1,1,1,},{0,-1,-1,},{0,-1,0,},{0,-1,1,},
-        {0,0,-1,},{0,0,1,},{0,1,-1,},{0,1,0,},
-        {0,1,1,},{1,-1,-1,},{1,-1,0,},{1,-1,1,},
-        {1,0,-1,},{1,0,0,},{1,0,1,},{1,1,-1,},
-        {1,1,0,},{1,1,1,},
+        {
+            -1, -1, -1,
+        },
+        {
+            -1, -1, 0,
+        },
+        {
+            -1, -1, 1,
+        },
+        {
+            -1, 0, -1,
+        },
+        {
+            -1, 0, 0,
+        },
+        {
+            -1, 0, 1,
+        },
+        {
+            -1, 1, -1,
+        },
+        {
+            -1, 1, 0,
+        },
+        {
+            -1, 1, 1,
+        },
+        {
+            0, -1, -1,
+        },
+        {
+            0, -1, 0,
+        },
+        {
+            0, -1, 1,
+        },
+        {
+            0, 0, -1,
+        },
+        {
+            0, 0, 1,
+        },
+        {
+            0, 1, -1,
+        },
+        {
+            0, 1, 0,
+        },
+        {
+            0, 1, 1,
+        },
+        {
+            1, -1, -1,
+        },
+        {
+            1, -1, 0,
+        },
+        {
+            1, -1, 1,
+        },
+        {
+            1, 0, -1,
+        },
+        {
+            1, 0, 0,
+        },
+        {
+            1, 0, 1,
+        },
+        {
+            1, 1, -1,
+        },
+        {
+            1, 1, 0,
+        },
+        {
+            1, 1, 1,
+        },
     };
+
+    const vector<vector<float>> vonN = {
+        {-1,0,0},
+        {0,-1,0},
+        {0,0,-1},
+        {1,0,0},
+        {0,1,0},
+        {0,0,1},
+    }
     // CUBE GEN ATTRIBUTES
     unsigned int num_cubes;
     unsigned int side_length;
@@ -305,7 +385,6 @@ class Object {
                     float curr = cells_vec[z][y][x];
                     if (curr >= 1.0f) {
                         int ncount = 0;
-                        // up,down,left,right,back,front
                         for (auto i : mooreN) {
                             if (inBounds(x + i[0], y + i[1], z + i[2]) &&
                                 cells_vec[z + i[2]][y + i[1]][x + i[0]] >= 1.0f) {
@@ -336,7 +415,7 @@ class Object {
                 }
             }
         }
-       
+
         // now lets update buffer based on nextgen
         for (int z = 0; z < side_length; z++) {
             for (int y = 0; y < side_length; y++) {
@@ -348,8 +427,8 @@ class Object {
             }
         }
         auto t2 = high_resolution_clock::now();
-        duration<double, std::milli> ms_double = t2 - t1; 
-        std::cout.flush(); 
+        duration<double, std::milli> ms_double = t2 - t1;
+        std::cout.flush();
         cout << ms_double.count() << "ms" << endl; // END PERFORMANCE TESTING CODE >:0
         cells_vec = next_gen_vec;
         next_gen_vec.clear();
