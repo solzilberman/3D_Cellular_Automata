@@ -416,6 +416,8 @@ class Object {
             }
         }
 
+        //instace draw call
+
         // now lets update buffer based on nextgen
         for (int z = 0; z < side_length; z++) {
             for (int y = 0; y < side_length; y++) {
@@ -430,7 +432,7 @@ class Object {
         duration<double, std::milli> ms_double = t2 - t1;
         std::cout.flush();
         cout << ms_double.count() << "ms" << endl; // END PERFORMANCE TESTING CODE >:0
-        cells_vec = next_gen_vec;
+        cells_vec = std::move(next_gen_vec);
         next_gen_vec.clear();
     };
 
