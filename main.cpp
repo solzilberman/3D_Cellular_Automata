@@ -4,6 +4,7 @@
 #include "./headers/Shader.h"
 #include "./headers/VertexBuffer.h"
 #include "./headers/WireFrame.h"
+#include "./headers/ArgParser.h"
 #include <GL/gl.h>
 #include <GL/glew.h>
 #include <GL/glext.h>
@@ -16,12 +17,13 @@
 // #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <string>
-using namespace std;
+#include <algorithm>
 
 #define SCREEN_WIDTH 500
 #define SCREEN_HEIGHT 500
 #define GLM_ENABLE_EXPERIMENTAL
 
+using namespace std;
 int nv = 8;
 int ni = 12;
 float fstep = 0.9f;
@@ -33,11 +35,13 @@ bool rotation = false, animation = false;
 bool LIGHTING_ENABLED = true;
 string VSHADER_PATH = "./shaders/shader.vs";
 string FSHADER_PATH = "./shaders/shader.fs";
-int rule;
+int ANIM_STEP = 1;
+int RULE;
 int tt = 0;
+int imcount = 0;
 
 // init config
-int side_length = 0;
+int SIDE_LENGTH = 0;
 vector<vector<float>> rules;
 
 vector<float> wire_vertices = {
@@ -74,7 +78,7 @@ void display() {
         glClearColor(1, 1, 1, 1);
     cubes->draw();
     if (animation) {
-        if (tt % 5 == 0) {
+        if (tt % ANIM_STEP == 0) {
             tt = 0;
             cubes->update();
         }
@@ -84,7 +88,6 @@ void display() {
 
     wf->draw();
     glutSwapBuffers();
-    // glutPostRedisplay();
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -147,13 +150,55 @@ void Timer(int value) {
 
 void readConfig(string filename) {
     ifstream istr(filename);
-    istr >> side_length;
+    istr >> SIDE_LENGTH;
     istr >> LIGHTING_ENABLED;
-    istr >> rule;
+    istr >> RULE;
     istr >> animation;
     istr >> rotation;
     VSHADER_PATH = LIGHTING_ENABLED ? "./shaders/shader.vs" : "./shaders/shader_nl.vs";
     FSHADER_PATH = LIGHTING_ENABLED ? "./shaders/shader.fs" : "./shaders/shader_nl.fs";
+}
+
+void procArgs(int argc, char **argv) {
+
+	string arg1, arg2, arg3;
+    switch (argc) {
+	
+    case 2:
+        arg1 = string(argv[1]);
+        RULE = atoi(arg1.c_str());
+        break;
+    case 3:
+        arg1 = string(argv[1]);
+        arg2 = string(argv[2]);
+        animation = arg1 == "true";
+        rotation = arg2 == "true";
+        break;
+    case 4:
+        arg1 = string(argv[1]);
+        arg2 = string(argv[2]);
+        animation = arg1 == "true";
+        rotation = arg2 == "true";
+        RULE = atoi(argv[3]);
+        break;
+    case 5:
+        arg1 = string(argv[1]);
+        arg2 = string(argv[2]);
+        animation = arg1 == "true";
+        rotation = arg2 == "true";
+        RULE = atoi(argv[3]);
+        SIDE_LENGTH = atoi(argv[4]);
+        break;
+	case 6:
+        arg1 = string(argv[1]);
+        arg2 = string(argv[2]);
+        animation = arg1 == "true";
+        rotation = arg2 == "true";
+        RULE = atoi(argv[3]);
+        SIDE_LENGTH = atoi(argv[4]);
+        ANIM_STEP = atoi(argv[5]);
+        break;
+    };
 }
 
 void init() {
@@ -182,35 +227,17 @@ void init() {
 // main function
 // sets up window to which we'll draw
 int main(int argc, char **argv) {
+	if(cmdOptionExists(argv, argv+argc, "-h"))
+    {
+       printHelpMenu();
+    }
     init();
-    string arg1, arg2, arg3;
-    switch (argc) {
-    case 1:
-        break;
-    case 2:
-        arg1 = string(argv[1]);
-        rule = atoi(arg1.c_str());
-        break;
-    case 3:
-        arg1 = string(argv[1]);
-        arg2 = string(argv[2]);
-        animation = arg1 == "true";
-        rotation = arg2 == "true";
-        break;
-    case 4:
-        arg1 = string(argv[1]);
-        arg2 = string(argv[2]);
-        animation = arg1 == "true";
-        rotation = arg2 == "true";
-        rule = atoi(argv[3]);
-        break;
-    };
-
-    c = new Camera(glm::vec3((side_length / 2.0f), side_length + 40.0f, side_length + 40.0f),
-                   glm::vec3((side_length / 2.0f), 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy,
+	procArgs(argc, argv);
+    c = new Camera(glm::vec3((SIDE_LENGTH / 2.0f), SIDE_LENGTH + 40.0f, SIDE_LENGTH + 40.0f),
+                   glm::vec3((SIDE_LENGTH / 2.0f), 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy,
                    aspect, near, far);
-    wf = new WireFrame(2.5f, (float)side_length, c, VSHADER_PATH, FSHADER_PATH);
-    cubes->read(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, side_length, c, rule);
+    wf = new WireFrame(2.5f, (float)SIDE_LENGTH, c, VSHADER_PATH, FSHADER_PATH);
+    cubes->read(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, SIDE_LENGTH, c, RULE);
     glutMainLoop();
     return 0;
 }
