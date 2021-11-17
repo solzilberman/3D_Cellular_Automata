@@ -3,20 +3,21 @@
 #include <GL/glew.h>
 
 class VertexBufferInstanced {
-    unsigned int ibo, iao;
 
   public:
+    unsigned int ibo, iao;
     float *vertices;
     VertexBufferInstanced(unsigned int nc) {
 
-        unsigned long tstride = 3u*sizeof(float);
+        unsigned long tstride = sizeof(glm::vec3);
         glGenBuffers(1, &ibo);
         glBindBuffer(GL_ARRAY_BUFFER, ibo);
         glBufferData(GL_ARRAY_BUFFER, tstride*nc, nullptr,
                      GL_DYNAMIC_DRAW);
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 1000000*tstride, (void *) 0);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, tstride, (void *) 0);
         glVertexAttribDivisor(2, 1);
+        glEnableVertexAttribArray(2);
+
     }
 
     void free() {
@@ -36,7 +37,7 @@ class VertexBuffer {
         vertices = vs;
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, stride * nv, vs, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, stride * nv, vs, GL_STATIC_DRAW);
 
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);

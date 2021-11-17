@@ -54,6 +54,7 @@ class WireFrame {
     void draw() {
         wsh->use();
         wsh->setMat4("pvm", cam->pvm());
+        //wsh->setMat4("model", cam->getModel());
         wsh->setBool("is_wire", true);
         wvb->use();
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINES);

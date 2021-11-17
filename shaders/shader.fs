@@ -66,9 +66,9 @@ void main()
     float y = position.y;
     float z = position.z;
     // float r = sqrt((x-10.5)*(x-10.5) + (y-10.5)*(y-10.5) + (z-10.5)*(z-10.5));
-    float red = position.x/side_length;
-    float green = position.y/side_length;
-    float blue = position.z/side_length;
+    float red = position.x/10;
+    float green = position.y/10;
+    float blue = position.z/10;
     float range2 = 0.5f;
     red = (red*range2);
     green = (green*range2);
@@ -80,6 +80,6 @@ void main()
         blue = 0.0f;
         // r = 0.0f;
     }
-   // vec3 c = lighting();
-    gl_FragColor = vec4(0,0,0,1.0); // white color
+    vec3 c = lighting();
+    gl_FragColor = vec4(c.x,c.y,c.z,1.0); // white color
 }

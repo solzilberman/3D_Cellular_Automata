@@ -235,7 +235,7 @@ int main(int argc, char **argv) {
     c = new Camera(glm::vec3((SIDE_LENGTH / 2.0f), SIDE_LENGTH + 40.0f, SIDE_LENGTH + 40.0f),
                    glm::vec3((SIDE_LENGTH / 2.0f), 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy,
                    aspect, near, far);
-    wf = new WireFrame(2.5f, (float)SIDE_LENGTH, c, VSHADER_PATH, FSHADER_PATH);
+    wf = new WireFrame(2.5f, (float)SIDE_LENGTH, c, "./shaders/shader_nl.vs","./shaders/shader_nl.fs");
     cubes->read(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, SIDE_LENGTH, c, RULE);
     glutMainLoop();
     return 0;
