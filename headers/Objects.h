@@ -142,42 +142,18 @@ class Object {
     };
 
     vector<vector<float>> pos_norms = {
-        {1,1,1,0,0,-1,1.0f},
-        {0,0,1,0,0,-1,1.0f},
-        {0,1,1,0,0,-1,1.0f},
-        {1,1,1,0,0,-1,1.0f},
-        {1,0,1,0,0,-1,1.0f},
-        {0,0,1,0,0,-1,1.0f},
-        {1,1,1,-1,0,0,1.0f},
-        {1,0,0,-1,0,0,1.0f},
-        {1,0,1,-1,0,0,1.0f},
-        {1,1,1,-1,0,0,1.0f},
-        {1,1,0,-1,0,0,1.0f},
-        {1,0,0,-1,0,0,1.0f},
-         {1,0,1,0,1,0,1.0f},
-         {0,0,0,0,1,0,1.0f},
-         {0,0,1,0,1,0,1.0f},
-        {1,0,1,0,1,-0,1.0f},
-        {1,0,0,0,1,-0,1.0f},
-        {0,0,0,0,1,-0,1.0f},
-        {0,1,1,1,-0,0,1.0f},
-        {0,0,1,1,-0,0,1.0f},
-        {0,0,0,1,-0,0,1.0f},
-         {0,1,1,1,0,0,1.0f},
-         {0,0,0,1,0,0,1.0f},
-         {0,1,0,1,0,0,1.0f},
-        {1,1,1,0,-1,0,1.0f},
-        {0,1,1,0,-1,0,1.0f},
-        {0,1,0,0,-1,0,1.0f},
-        {1,1,1,0,-1,0,1.0f},
-        {0,1,0,0,-1,0,1.0f},
-        {1,1,0,0,-1,0,1.0f},
-        {1,1,0,-0,0,1,1.0f},
-        {0,1,0,-0,0,1,1.0f},
-        {0,0,0,-0,0,1,1.0f},
-        {1,1,0,0,0,1,1.0},
-        {0,0,0,0,0,1,1.0},
-        {1,0,0,0,0,1,1.0},
+        {1, 1, 1, 0, 0, -1, 0.0f}, {0, 0, 1, 0, 0, -1, 0.0f}, {0, 1, 1, 0, 0, -1, 0.0f},
+        {1, 1, 1, 0, 0, -1, 0.0f}, {1, 0, 1, 0, 0, -1, 0.0f}, {0, 0, 1, 0, 0, -1, 0.0f},
+        {1, 1, 1, -1, 0, 0, 0.0f}, {1, 0, 0, -1, 0, 0, 0.0f}, {1, 0, 1, -1, 0, 0, 0.0f},
+        {1, 1, 1, -1, 0, 0, 0.0f}, {1, 1, 0, -1, 0, 0, 0.0f}, {1, 0, 0, -1, 0, 0, 0.0f},
+        {1, 0, 1, 0, 1, 0,  0.0f},  {0, 0, 0, 0, 1, 0, 0.0f},  {0, 0, 1, 0, 1, 0, 0.0f},
+        {1, 0, 1, 0, 1, -0, 0.0f}, {1, 0, 0, 0, 1, -0, 0.0f}, {0, 0, 0, 0, 1, -0, 0.0f},
+        {0, 1, 1, 1, -0, 0, 0.0f}, {0, 0, 1, 1, -0, 0, 0.0f}, {0, 0, 0, 1, -0, 0, 0.0f},
+        {0, 1, 1, 1, 0, 0,  0.0f},  {0, 0, 0, 1, 0, 0, 0.0f},  {0, 1, 0, 1, 0, 0, 0.0f},
+        {1, 1, 1, 0, -1, 0, 0.0f}, {0, 1, 1, 0, -1, 0, 0.0f}, {0, 1, 0, 0, -1, 0, 0.0f},
+        {1, 1, 1, 0, -1, 0, 0.0f}, {0, 1, 0, 0, -1, 0, 0.0f}, {1, 1, 0, 0, -1, 0, 0.0f},
+        {1, 1, 0, -0, 0, 1, 0.0f}, {0, 1, 0, -0, 0, 1, 0.0f}, {0, 0, 0, -0, 0, 1, 0.0f},
+        {1, 1, 0, 0, 0, 1,  0.0},   {0, 0, 0, 0, 0, 1, 0.0},   {1, 0, 0, 0, 0, 1, 0.0},
     };
 
     // CUBE GEN ATTRIBUTES
@@ -280,6 +256,7 @@ class Object {
                         int curr = x + side_length * y + side_length * side_length * z;
                         for (int i = 0; i < 8; i++)
                             cubegen[(int)curr].colors[i].w = 1.0f;
+                            translations.push_back(glm::vec3(x, y, z));
                     }
                 }
             }
@@ -385,11 +362,10 @@ class Object {
         readRuleset(rule);
         cam = camera;
         sh = new Shader(vertex_shader.c_str(), fragment_shader.c_str());
-        vb = LIGHTING_ENABLED ? new VertexBuffer(3 * 12, (float *) pos_norms.data())
-                               : vb = new VertexBufferIndex(nv, vertices.data(), 3 * ni,
-                                                            (unsigned int *)indices.data());
+        vb = LIGHTING_ENABLED ? new VertexBuffer(3 * 12, (float *)pos_norms.data())
+                              : vb = new VertexBufferIndex(nv, vertices.data(), 3 * ni,
+                                                           (unsigned int *)indices.data());
         vbi = new VertexBufferInstanced(num_cubes);
-
     };
 
     // method checks if inBounds
@@ -425,6 +401,7 @@ class Object {
     }
 
     void update() {
+        translations.clear();
         auto t1 = high_resolution_clock::now(); // PERFORMANCE TESTING CODE >:0
         float next_gen[side_length][side_length][side_length];
         vector<vector<vector<float>>> next_gen_vec = vector<vector<vector<float>>>(
@@ -502,23 +479,20 @@ class Object {
         // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         // float tt = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
         sh->use();
-        sh->setMat4("pvm", cam->pvm());
+        sh->setMat4("pv", cam->pv());
         // sh->setFloat("time", tt);
         if (LIGHTING_ENABLED)
             sh->setMat4("model", cam->getModel());
         if (LIGHTING_ENABLED)
             sh->setVec3("eye", cam->eye.x, cam->eye.y, cam->eye.z);
         sh->setFloat("side_length", side_length - (side_length / 2.0f));
-
-        vbi->use();
-        std::cout.flush();
-
-        cout << translations.size() << endl;
-        glBufferSubData(GL_ARRAY_BUFFER, 0, 3u*sizeof(float) * translations.size(), translations.data());
         vb->use();
         vbi->use();
-
+        glBufferSubData(GL_ARRAY_BUFFER, 0, 3u * sizeof(float) * translations.size(),
+                        translations.data());
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+       // std::cout.flush();
+       // cout << "drawing: " << translations.size() << endl;
         // if (LIGHTING_ENABLED)
         //     glDrawArrays(GL_TRIANGLES, 0, 3 * 12 * num_cubes);
         // else

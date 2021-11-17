@@ -80,6 +80,6 @@ void main()
         blue = 0.0f;
         // r = 0.0f;
     }
-    vec3 c = lighting();
-    gl_FragColor = vec4(c.x,c.y,c.z,col); // white color
+   // vec3 c = lighting();
+    gl_FragColor = vec4(0,0,0,1.0); // white color
 }

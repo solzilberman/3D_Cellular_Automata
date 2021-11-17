@@ -49,6 +49,7 @@ class Camera {
     }
 
     glm::mat4 pvm() { return this->projection * this->view * this->model; }
+    glm::mat4 pv() { return this->projection * this->view;}
 
     glm::mat4 getModel() { return this->model; }
 

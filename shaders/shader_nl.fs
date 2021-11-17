@@ -23,5 +23,5 @@ void main()
         blue = 0.0f;
         // r = 0.0f;
     }
-    gl_FragColor = vec4(1,1,1,1); // white color
+    gl_FragColor = vec4(red,blue,green,color.w); // white color
 }

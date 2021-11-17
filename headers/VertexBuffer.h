@@ -24,7 +24,7 @@ class VertexBufferInstanced {
         glDeleteVertexArrays(1, &iao);
     }
 
-    void use() { glBindVertexArray(iao); }
+    void use() { glBindBuffer(GL_ARRAY_BUFFER,ibo); }
 };
 class VertexBuffer {
     unsigned int vbo, vao;
