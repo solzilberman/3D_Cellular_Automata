@@ -183,6 +183,7 @@ class Object {
             getline(istr, dummy);
         }
         istr >> na >> nb;
+        cout << "na: " << na << " nb: " << nb << endl;
         stay_alive = vector<float>(na);
         born = vector<float>(nb);
         for (int i = 0; i < na; i++) {
@@ -216,6 +217,7 @@ class Object {
                              (z - side_length / 2.0f) * (z - side_length / 2.0f)) <= 5.0f) {
                             float curr = x + side_length * y + side_length * side_length * z;
                             cells_vec[(int)curr] = 1.0f;
+                            translations.push_back(glm::vec3(x, y, z));
                     }
                 }
             }
