@@ -133,7 +133,7 @@ class Object {
         {1,0,0},
         {0,1,0},
         {0,0,1},
-    }
+    };
     // CUBE GEN ATTRIBUTES
     unsigned int num_cubes;
     unsigned int side_length;
