@@ -20,8 +20,8 @@ vec3 lighting()
 
     vec3 amb = vec3(red,green,blue);
     vec3 diff = vec3(red,green,blue);
-    vec3 spec = vec3(red,green,blue);
-    vec3 lpp[3] = vec3[](vec3(side_length, side_length, side_length),vec3(side_length, side_length, side_length),vec3(+5,side_length, side_length));
+    vec3 spec = vec3(1,1,0);
+    vec3 lpp[3] = vec3[](vec3(side_length, side_length*2+10, side_length),vec3(side_length-5, side_length*2+10, side_length),vec3(+5,side_length, side_length));
     float kl = 0;
     float kq = .01;
     //d s ns

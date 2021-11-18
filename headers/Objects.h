@@ -21,7 +21,7 @@ Encapsulation of all objects in the program.
 #include <thread>
 #include <algorithm>
 #include <mutex>
-
+#define REFLECT_DIVISOR 1
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 using std::chrono::duration;
@@ -223,7 +223,7 @@ class Object {
         cout << "[status] Num Cubes: " << num_cubes << endl;
         side_length = sl; // cbrt(num_cubes);
         cout << "[status] Side Length: " << side_length << endl;
-        this->cells_vec = vector<float>(num_cubes),0.0f;
+        this->cells_vec = vector<float>(num_cubes), 0.0f;
 
         // init 'sphere' of cubes
         for (int z = 0; z < side_length; z++) {
@@ -274,25 +274,25 @@ class Object {
 
     void worker(int start, int end, float *next_gen_vec) {
         for (int k = start; k < end; k++) {
-            int pos[3] = {0,0,0};
-            to3D(k, pos,side_length);
+            int pos[3] = {0, 0, 0};
+            to3D(k, pos, side_length);
             int x = pos[0], y = pos[1], z = pos[2];
-            if (y > side_length / 2 || x > side_length / 2) {
+            if (y > side_length / REFLECT_DIVISOR || x > side_length / REFLECT_DIVISOR) {
                 continue;
             }
-           // mtx.lock();
+            // mtx.lock();
             float curr = cells_vec[z * side_length * side_length + y * side_length + x];
-           // mtx.unlock();
+            // mtx.unlock();
             if (curr >= 1.0f) {
                 int ncount = 0;
                 for (auto i : mooreN) {
-                    //mtx.lock();
+                    // mtx.lock();
                     if (inBounds(x + i[0], y + i[1], z + i[2]) &&
                         cells_vec[(int)((((z + i[2]) * side_length * side_length)) +
                                         ((y + i[1]) * side_length) + (x + i[0]))] >= 1.0f) {
                         ncount++;
                     }
-                   // mtx.unlock();
+                    // mtx.unlock();
                 }
                 if (stay_alive_set.find(ncount) != stay_alive_set.end()) {
                     mtx.lock();
@@ -315,13 +315,13 @@ class Object {
             } else {
                 int ncount = 0;
                 for (auto i : mooreN) {
-                    //mtx.lock();
+                    // mtx.lock();
                     if (inBounds(x + i[0], y + i[1], z + i[2]) &&
                         cells_vec[(int)((((z + i[2]) * side_length * side_length)) +
                                         ((y + i[1]) * side_length) + (x + i[0]))] >= 1.0f) {
                         ncount++;
                     }
-                    //mtx.unlock();
+                    // mtx.unlock();
                 }
                 if (born_set.find(ncount) != born_set.end()) {
                     mtx.lock();
@@ -340,28 +340,45 @@ class Object {
     void update() {
         this->translations.clear();
         auto t1 = high_resolution_clock::now(); // PERFORMANCE TESTING CODE >:0
-        vector<float> next_gen_vec(num_cubes,0.0f);
+        vector<float> next_gen_vec(num_cubes, 0.0f);
         int num_threads = 50;
         std::vector<std::thread> threads;
-        for(int i = 0; i < num_threads; i++) {
-            threads.push_back(std::thread(&Object::worker,this, i * num_cubes / (2* num_threads), (i + 1) * num_cubes /  (2* num_threads), next_gen_vec.data()));
+        for (int i = 0; i < num_threads; i++) {
+            threads.push_back(std::thread(
+                &Object::worker, this, i * num_cubes / (REFLECT_DIVISOR * num_threads),
+                (i + 1) * num_cubes / (REFLECT_DIVISOR * num_threads), next_gen_vec.data()));
         }
 
         for (auto &t : threads) {
             t.join();
         }
-        int kk = translations.size();
-        for(int t = 0; t < kk; t++) {
-            translations.push_back(glm::vec3(translations[t].x, translations[t].y, side_length -1 - translations[t].z));
-            translations.push_back(glm::vec3(translations[t].x, side_length - 1 - translations[t].y, translations[t].z));
-            translations.push_back(glm::vec3( side_length -1 -translations[t].x, translations[t].y, translations[t].z));
+        if (REFLECT_DIVISOR > 1) {
+            int kk = translations.size();
+            for (int t = 0; t < kk; t++) {
+                translations.push_back(glm::vec3(translations[t].x, translations[t].y,
+                                                 side_length - 1 - translations[t].z));
 
-            translations.push_back(glm::vec3(side_length -1 - translations[t].x, side_length -1 - translations[t].y, translations[t].z));
-            translations.push_back(glm::vec3(translations[t].x, side_length -1 - translations[t].y, side_length -1 - translations[t].z));
-            translations.push_back(glm::vec3(side_length -1 - translations[t].x,  translations[t].y, side_length -1 - translations[t].z));
+                translations.push_back(glm::vec3(
+                    translations[t].x, side_length - 1 - translations[t].y, translations[t].z));
 
-            translations.push_back(glm::vec3(side_length -1 - translations[t].x, side_length -1 - translations[t].y, side_length -1 - translations[t].z));
-        } 
+                translations.push_back(glm::vec3(side_length - 1 - translations[t].x,
+                                                 translations[t].y, translations[t].z));
+
+                translations.push_back(glm::vec3(side_length - 1 - translations[t].x,
+                                                 side_length - 1 - translations[t].y,
+                                                 translations[t].z));
+                translations.push_back(glm::vec3(translations[t].x,
+                                                 side_length - 1 - translations[t].y,
+                                                 side_length - 1 - translations[t].z));
+                translations.push_back(glm::vec3(side_length - 1 - translations[t].x,
+                                                 translations[t].y,
+                                                 side_length - 1 - translations[t].z));
+
+                translations.push_back(glm::vec3(side_length - 1 - translations[t].x,
+                                                 side_length - 1 - translations[t].y,
+                                                 side_length - 1 - translations[t].z));
+            }
+        }
 
         cells_vec = std::move(next_gen_vec);
         auto t2 = high_resolution_clock::now();
