@@ -1,3 +1,6 @@
+/*
+ @author - Sol Zilberman
+ */
 #include <cmath>
 #include <cstdlib>
 #include <fstream>

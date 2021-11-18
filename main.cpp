@@ -1,4 +1,5 @@
-// CPP program to render a triangle using Shaders
+// 3D Cellular Automata
+// @author - Sol Zilberman
 #include "./headers/Camera.h"
 #include "./headers/Objects.h"
 #include "./headers/Shader.h"

@@ -1,3 +1,6 @@
+/*
+ @author - Sol Zilberman
+ */
 #ifndef WIREFRAME_H
 #define WIREFRAME_H
 

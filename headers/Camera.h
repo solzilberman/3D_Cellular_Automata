@@ -1,3 +1,6 @@
+/*
+ @author - Sol Zilberman
+ */
 #ifndef CAMERA_H
 #define CAMERA_H
 #include <glm/gtx/rotate_vector.hpp>
