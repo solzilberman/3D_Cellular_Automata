@@ -18,13 +18,32 @@ Encapsulation of all objects in the program.
 #include <vector>
 #include <set>
 #include <chrono>
+#include <thread>
+#include <algorithm>
+#include <mutex>
 
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 using std::chrono::duration;
 using std::chrono::milliseconds;
+std::mutex mtx;
 using namespace std;
+struct less_than_key {
+    inline bool operator()(const glm::vec3 &struct1, glm::vec3 &struct2) {
+        return (glm::length(struct1 - glm::vec3(0, 0, 0)) <
+                glm::length(struct2 - glm::vec3(0, 0, 0)));
+    }
+};
 
+void to3D(int idx, int *arr, int side_length) {
+    int z = idx / (side_length * side_length);
+    idx -= (z * side_length * side_length);
+    int y = idx / side_length;
+    int x = idx % side_length;
+    arr[0] = x;
+    arr[1] = y;
+    arr[2] = z;
+}
 // @Class: Cube Entity
 // @Description: A cube entity.
 class Cube {
@@ -130,20 +149,19 @@ class Object {
         {-1, 0, 0}, {0, -1, 0}, {0, 0, -1}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1},
     };
 
-
-    float pos_norms[36*7] = {
-       1, 1, 1, 0, 0, -1,  0.0f, 0, 0, 1, 0, 0, -1, 0.0f, 0, 1, 1, 0, 0, -1, 0.0f,
-       1, 1, 1, 0, 0, -1,  0.0f, 1, 0, 1, 0, 0, -1, 0.0f, 0, 0, 1, 0, 0, -1, 0.0f,
-       1, 1, 1, -1, 0, 0,  0.0f, 1, 0, 0, -1, 0, 0, 0.0f, 1, 0, 1, -1, 0, 0, 0.0f,
-       1, 1, 1, -1, 0, 0,  0.0f, 1, 1, 0, -1, 0, 0, 0.0f, 1, 0, 0, -1, 0, 0, 0.0f,
-       1, 0, 1, 0, 1,  0,  0.0f, 0, 0, 0, 0, 1, 0, 0.0f,   0, 0, 1, 0, 1, 0, 0.0f,
-       1, 0, 1, 0, 1, -0,  0.0f, 1, 0, 0, 0, 1, -0, 0.0f, 0, 0, 0, 0, 1, -0, 0.0f,
-       0, 1, 1, 1, -0, 0,  0.0f, 0, 0, 1, 1, -0, 0, 0.0f, 0, 0, 0, 1, -0, 0, 0.0f,
-       0, 1, 1, 1, 0,  0,  0.0f, 0, 0, 0, 1, 0, 0, 0.0f,   0, 1, 0, 1, 0, 0, 0.0f,
-       1, 1, 1, 0, -1, 0,  0.0f, 0, 1, 1, 0, -1, 0, 0.0f, 0, 1, 0, 0, -1, 0, 0.0f,
-       1, 1, 1, 0, -1, 0,  0.0f, 0, 1, 0, 0, -1, 0, 0.0f, 1, 1, 0, 0, -1, 0, 0.0f,
-       1, 1, 0, -0, 0, 1,  0.0f, 0, 1, 0, -0, 0, 1, 0.0f, 0, 0, 0, -0, 0, 1, 0.0f,
-       1, 1, 0, 0, 0,  1,  0.0,  0, 0, 0, 0, 0, 1, 0.0,     1, 0, 0, 0, 0, 1, 0.0,
+    float pos_norms[36 * 7] = {
+        1, 1, 1, 0,  0,  -1, 0.0f, 0, 0, 1, 0,  0,  -1, 0.0f, 0, 1, 1, 0,  0,  -1, 0.0f,
+        1, 1, 1, 0,  0,  -1, 0.0f, 1, 0, 1, 0,  0,  -1, 0.0f, 0, 0, 1, 0,  0,  -1, 0.0f,
+        1, 1, 1, -1, 0,  0,  0.0f, 1, 0, 0, -1, 0,  0,  0.0f, 1, 0, 1, -1, 0,  0,  0.0f,
+        1, 1, 1, -1, 0,  0,  0.0f, 1, 1, 0, -1, 0,  0,  0.0f, 1, 0, 0, -1, 0,  0,  0.0f,
+        1, 0, 1, 0,  1,  0,  0.0f, 0, 0, 0, 0,  1,  0,  0.0f, 0, 0, 1, 0,  1,  0,  0.0f,
+        1, 0, 1, 0,  1,  -0, 0.0f, 1, 0, 0, 0,  1,  -0, 0.0f, 0, 0, 0, 0,  1,  -0, 0.0f,
+        0, 1, 1, 1,  -0, 0,  0.0f, 0, 0, 1, 1,  -0, 0,  0.0f, 0, 0, 0, 1,  -0, 0,  0.0f,
+        0, 1, 1, 1,  0,  0,  0.0f, 0, 0, 0, 1,  0,  0,  0.0f, 0, 1, 0, 1,  0,  0,  0.0f,
+        1, 1, 1, 0,  -1, 0,  0.0f, 0, 1, 1, 0,  -1, 0,  0.0f, 0, 1, 0, 0,  -1, 0,  0.0f,
+        1, 1, 1, 0,  -1, 0,  0.0f, 0, 1, 0, 0,  -1, 0,  0.0f, 1, 1, 0, 0,  -1, 0,  0.0f,
+        1, 1, 0, -0, 0,  1,  0.0f, 0, 1, 0, -0, 0,  1,  0.0f, 0, 0, 0, -0, 0,  1,  0.0f,
+        1, 1, 0, 0,  0,  1,  0.0,  0, 0, 0, 0,  0,  1,  0.0,  1, 0, 0, 0,  0,  1,  0.0,
     };
 
     // CUBE GEN ATTRIBUTES
@@ -151,7 +169,7 @@ class Object {
     unsigned int side_length;
     unsigned int nv;
     unsigned int ni;
-    float * cells_vec;
+    float *cells_vec;
     vector<glm::vec3> translations;
 
     // OPENGL ATTRIBUTES
@@ -215,9 +233,9 @@ class Object {
                     if (sqrt((x - side_length / 2.0f) * (x - side_length / 2.0f) +
                              (y - side_length / 2.0f) * (y - side_length / 2.0f) +
                              (z - side_length / 2.0f) * (z - side_length / 2.0f)) <= 5.0f) {
-                            float curr = x + side_length * y + side_length * side_length * z;
-                            cells_vec[(int)curr] = 1.0f;
-                            translations.push_back(glm::vec3(x, y, z));
+                        float curr = x + side_length * y + side_length * side_length * z;
+                        cells_vec[(int)curr] = 1.0f;
+                        translations.push_back(glm::vec3(x, y, z));
                     }
                 }
             }
@@ -233,7 +251,8 @@ class Object {
         sh->setVec3("eye", cam->eye.x, cam->eye.y, cam->eye.z);
         sh->setFloat("side_length", side_length - (side_length / 2.0f));
         vb->use();
-        glBufferSubData(GL_ARRAY_BUFFER, 0, translations.size()*3u*sizeof(float),translations.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, translations.size() * 3u * sizeof(float),
+                        translations.data());
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawArraysInstanced(GL_TRIANGLES, 0, 3 * 12, translations.size());
     };
@@ -254,51 +273,92 @@ class Object {
         return false;
     }
 
-    void update() {
-        translations.clear();
-        auto t1 = high_resolution_clock::now(); // PERFORMANCE TESTING CODE >:0
-        float * next_gen_vec = new float[num_cubes];
-        memset(next_gen_vec, 0, num_cubes * sizeof(float));
-        for (int z = 0; z < side_length; z++) {
-            for (int y = 0; y < side_length; y++) {
-                for (int x = 0; x < side_length; x++) {
-                    float curr = cells_vec[z*side_length*side_length + y*side_length + x];
-                    if (curr >= 1.0f) {
-                        int ncount = 0;
-                        for (auto i : mooreN) {
-                            if (inBounds(x + i[0], y + i[1], z + i[2]) &&
-                                cells_vec[(int)((((z+i[2])*side_length*side_length)) + ((y + i[1]) *side_length) + (x + i[0]))] >= 1.0f) {
-                                ncount++;
-                            }
-                        }
-                        if (stay_alive_set.find(ncount) != stay_alive_set.end()) {
-                            next_gen_vec[z*side_length*side_length + y*side_length+x] = lifecycle;
-                            translations.push_back(glm::vec3(x, y, z));
-                        } else {
-                            next_gen_vec[z*side_length*side_length + y*side_length+x] = cells_vec[z*side_length*side_length + y*side_length + x] - 1.0f;
-                            translations.push_back(glm::vec3(x, y, z));
-                        }
-                    } else if (curr > 1.0f) {
-                        next_gen_vec[z*side_length*side_length + y*side_length+x] = cells_vec[z*side_length*side_length + y*side_length + x] - 1.0f;
-                        translations.push_back(glm::vec3(x, y, z));
-                    } else {
-                        int ncount = 0;
-                        for (auto i : mooreN) {
-                            if (inBounds(x + i[0], y + i[1], z + i[2]) &&
-                                 cells_vec[(int)((((z+i[2])*side_length*side_length)) + ((y + i[1]) *side_length) + (x + i[0]))] >= 1.0f) {
-                                ncount++;
-                            }
-                        }
-                        if (born_set.find(ncount) != born_set.end()) {
-                            next_gen_vec[z*side_length*side_length + y*side_length+x] = lifecycle;
-                            translations.push_back(glm::vec3(x, y, z));
-                        } else {
-                            next_gen_vec[z*side_length*side_length + y*side_length+x] = 0.0f;
-                        }
+    void worker(int start, int end, float *next_gen_vec) {
+        for (int k = start; k < end; k++) {
+            int pos[3] = {0,0,0};
+            to3D(k, pos,side_length);
+            int x = pos[0], y = pos[1], z = pos[2];
+            if (y > side_length / 2 || x > side_length / 2) {
+                continue;
+            }
+            float curr = cells_vec[z * side_length * side_length + y * side_length + x];
+            if (curr >= 1.0f) {
+                int ncount = 0;
+                for (auto i : mooreN) {
+                    if (inBounds(x + i[0], y + i[1], z + i[2]) &&
+                        cells_vec[(int)((((z + i[2]) * side_length * side_length)) +
+                                        ((y + i[1]) * side_length) + (x + i[0]))] >= 1.0f) {
+                        ncount++;
                     }
+                }
+                if (stay_alive_set.find(ncount) != stay_alive_set.end()) {
+                    mtx.lock();
+                    next_gen_vec[z * side_length * side_length + y * side_length + x] = lifecycle;
+                    translations.push_back(glm::vec3(x, y, z));
+                    mtx.unlock();
+                } else {
+                    mtx.lock();
+                    next_gen_vec[z * side_length * side_length + y * side_length + x] =
+                        cells_vec[z * side_length * side_length + y * side_length + x] - 1.0f;
+                    translations.push_back(glm::vec3(x, y, z));
+                    mtx.unlock();
+                }
+            } else if (curr > 1.0f) {
+                mtx.lock();
+                next_gen_vec[z * side_length * side_length + y * side_length + x] =
+                    cells_vec[z * side_length * side_length + y * side_length + x] - 1.0f;
+                translations.push_back(glm::vec3(x, y, z));
+                mtx.unlock();
+            } else {
+                int ncount = 0;
+                for (auto i : mooreN) {
+                    if (inBounds(x + i[0], y + i[1], z + i[2]) &&
+                        cells_vec[(int)((((z + i[2]) * side_length * side_length)) +
+                                        ((y + i[1]) * side_length) + (x + i[0]))] >= 1.0f) {
+                        ncount++;
+                    }
+                }
+                if (born_set.find(ncount) != born_set.end()) {
+                    mtx.lock();
+                    next_gen_vec[z * side_length * side_length + y * side_length + x] = lifecycle;
+                    translations.push_back(glm::vec3(x, y, z));
+                    mtx.unlock();
+                } else {
+                    mtx.lock();
+                    next_gen_vec[z * side_length * side_length + y * side_length + x] = 0.0f;
+                    mtx.unlock();
                 }
             }
         }
+    };
+
+    void update() {
+        translations.clear();
+        auto t1 = high_resolution_clock::now(); // PERFORMANCE TESTING CODE >:0
+        float *next_gen_vec = new float[num_cubes];
+        memset(next_gen_vec, 0, num_cubes * sizeof(float));
+        int num_threads = 50;
+        std::vector<std::thread> threads;
+        for(int i = 0; i < num_threads; i++) {
+            threads.push_back(std::thread(&Object::worker,this, i * num_cubes / (2* num_threads), (i + 1) * num_cubes /  (2* num_threads), next_gen_vec));
+        }
+
+        for (auto &t : threads) {
+            t.join();
+        }
+        int kk = translations.size();
+        for(auto t : translations){
+            translations.push_back(glm::vec3(t.x, t.y, side_length -1 - t.z));
+            translations.push_back(glm::vec3(t.x, side_length -1 - t.y, t.z));
+            translations.push_back(glm::vec3( side_length -1 -t.x, t.y, t.z));
+
+            translations.push_back(glm::vec3(side_length -1 - t.x, side_length -1 - t.y, t.z));
+            translations.push_back(glm::vec3(t.x, side_length -1 - t.y, side_length -1 - t.z));
+            translations.push_back(glm::vec3(side_length -1 - t.x,  t.y, side_length -1 - t.z));
+
+            translations.push_back(glm::vec3(side_length -1 - t.x, side_length -1 - t.y, side_length -1 - t.z));
+        } 
+
         cells_vec = std::move(next_gen_vec);
         auto t2 = high_resolution_clock::now();
         duration<double, std::milli> ms_double = t2 - t1;
@@ -306,18 +366,17 @@ class Object {
         cout << ms_double.count() << "ms" << endl; // END PERFORMANCE TESTING CODE >:0
     };
 
-    void simple_update(int floor) {
-        cout << "simple" << endl;
-    }
+    void simple_update(int floor) { cout << "simple" << endl; }
 
     void draw() {
         sh->use();
         sh->setMat4("pvm", cam->pvm());
         sh->setMat4("model", cam->getModel());
         sh->setVec3("eye", cam->eye.x, cam->eye.y, cam->eye.z);
-        sh->setFloat("side_length", side_length - (side_length / 2.0f));
+        sh->setFloat("side_length", 0.5f * side_length);
         vb->use();
-        glBufferSubData(GL_ARRAY_BUFFER, 0, translations.size()*3u*sizeof(float),translations.data());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, translations.size() * 3u * sizeof(float),
+                        translations.data());
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawArraysInstanced(GL_TRIANGLES, 0, 3 * 12, translations.size());
     }

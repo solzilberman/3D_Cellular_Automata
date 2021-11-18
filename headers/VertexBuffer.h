@@ -12,7 +12,7 @@ class VertexBufferInstanced {
         unsigned long tstride = sizeof(glm::vec3);
         glGenBuffers(1, &ibo);
         glBindBuffer(GL_ARRAY_BUFFER, ibo);
-        glBufferData(GL_ARRAY_BUFFER, tstride*nc, nullptr,
+        glBufferData(GL_ARRAY_BUFFER, tstride*nc*1000, nullptr,
                      GL_DYNAMIC_DRAW);
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, tstride, (void *) 0);
         glVertexAttribDivisor(2, 1);

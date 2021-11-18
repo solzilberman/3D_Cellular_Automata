@@ -14,35 +14,25 @@ vec3 lighting()
     float y = position.y;
     float z = position.z;
     // float r = sqrt((x-10.5)*(x-10.5) + (y-10.5)*(y-10.5) + (z-10.5)*(z-10.5));
-    float red = position.x/side_length;
-    float green = position.y/side_length;
-    float blue = position.z/side_length;
-    float range2 = 0.5f;
-    red = (red*range2);
-    green = (green*range2);
-    blue = (blue*range2);
-    // r /= 25.0f;
-    if (is_wire){
-        red = 1.0f;
-        green = 1.0f;
-        blue = 1.0f;
-        // r = 0.0f;
-    }
+    float red = is_wire ? 1.0f : 0.5*position.x/side_length;
+    float green = is_wire ? 1.0f : 0.5*position.y/side_length;
+    float blue = is_wire ? 1.0f : 0.5*position.z/side_length;
+
     vec3 amb = vec3(red,green,blue);
     vec3 diff = vec3(red,green,blue);
     vec3 spec = vec3(red,green,blue);
-    vec3 lpos = vec3(10, 10, 10);
+    vec3 lpp[3] = vec3[](vec3(side_length, side_length, side_length),vec3(side_length, side_length, side_length),vec3(+5,side_length, side_length));
     float kl = 0;
     float kq = .01;
     //d s ns
     vec3 md = vec3(red,green,blue);
     vec3 ms = vec3(red,green,blue);
-    float ns = 50;
+    float ns = 100;
     vec3 n = normalize(nw);
     vec3 v = normalize(eye - pw);
     vec3 c = vec3(0.0f);
     for(int i = 0; i < 1; i++){
-        lpos = vec3(i == 0 ? 15 : -15 , 15, 15);
+        vec3 lpos = lpp[i];
         c += amb*md;
         vec3 ll = lpos - pw;
         if (dot(ll, n) > 0.0f) {
@@ -66,20 +56,6 @@ void main()
     float y = position.y;
     float z = position.z;
     // float r = sqrt((x-10.5)*(x-10.5) + (y-10.5)*(y-10.5) + (z-10.5)*(z-10.5));
-    float red = position.x/10;
-    float green = position.y/10;
-    float blue = position.z/10;
-    float range2 = 0.5f;
-    red = (red*range2);
-    green = (green*range2);
-    blue = (blue*range2);
-    // r /= 25.0f;
-    if (is_wire){
-        red = 0.0f;
-        green = 0.0f;
-        blue = 0.0f;
-        // r = 0.0f;
-    }
     vec3 c = lighting();
     gl_FragColor = vec4(c.x,c.y,c.z,1.0); // white color
 }
