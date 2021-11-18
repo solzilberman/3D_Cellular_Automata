@@ -7,9 +7,9 @@
 
 > `make run` <br />
 > or <br />
-> .`/main [animation enabled] [rotation enabled]` <br />
+> `./main [@bool animation enabled] [@bool rotation enabled] [@int rule number] [@int side length] [@int animstep]` <br />
 > example usage: <br />
->  `./main true false` <br />
+>  `./main true true 10 20 5` <br />
 
 **Dependencies**
 > GLSL >= 3.30 <br />
