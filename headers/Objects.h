@@ -169,7 +169,7 @@ class Object {
     unsigned int side_length;
     unsigned int nv;
     unsigned int ni;
-    float *cells_vec;
+    vector<float> cells_vec;
     vector<glm::vec3> translations;
 
     // OPENGL ATTRIBUTES
@@ -223,8 +223,7 @@ class Object {
         cout << "[status] Num Cubes: " << num_cubes << endl;
         side_length = sl; // cbrt(num_cubes);
         cout << "[status] Side Length: " << side_length << endl;
-        this->cells_vec = new float[num_cubes];
-        memset(this->cells_vec, 0, num_cubes * sizeof(float));
+        this->cells_vec = vector<float>(num_cubes),0.0f;
 
         // init 'sphere' of cubes
         for (int z = 0; z < side_length; z++) {
@@ -281,15 +280,19 @@ class Object {
             if (y > side_length / 2 || x > side_length / 2) {
                 continue;
             }
+           // mtx.lock();
             float curr = cells_vec[z * side_length * side_length + y * side_length + x];
+           // mtx.unlock();
             if (curr >= 1.0f) {
                 int ncount = 0;
                 for (auto i : mooreN) {
+                    //mtx.lock();
                     if (inBounds(x + i[0], y + i[1], z + i[2]) &&
                         cells_vec[(int)((((z + i[2]) * side_length * side_length)) +
                                         ((y + i[1]) * side_length) + (x + i[0]))] >= 1.0f) {
                         ncount++;
                     }
+                   // mtx.unlock();
                 }
                 if (stay_alive_set.find(ncount) != stay_alive_set.end()) {
                     mtx.lock();
@@ -312,11 +315,13 @@ class Object {
             } else {
                 int ncount = 0;
                 for (auto i : mooreN) {
+                    //mtx.lock();
                     if (inBounds(x + i[0], y + i[1], z + i[2]) &&
                         cells_vec[(int)((((z + i[2]) * side_length * side_length)) +
                                         ((y + i[1]) * side_length) + (x + i[0]))] >= 1.0f) {
                         ncount++;
                     }
+                    //mtx.unlock();
                 }
                 if (born_set.find(ncount) != born_set.end()) {
                     mtx.lock();
@@ -333,30 +338,29 @@ class Object {
     };
 
     void update() {
-        translations.clear();
+        this->translations.clear();
         auto t1 = high_resolution_clock::now(); // PERFORMANCE TESTING CODE >:0
-        float *next_gen_vec = new float[num_cubes];
-        memset(next_gen_vec, 0, num_cubes * sizeof(float));
+        vector<float> next_gen_vec(num_cubes,0.0f);
         int num_threads = 50;
         std::vector<std::thread> threads;
         for(int i = 0; i < num_threads; i++) {
-            threads.push_back(std::thread(&Object::worker,this, i * num_cubes / (2* num_threads), (i + 1) * num_cubes /  (2* num_threads), next_gen_vec));
+            threads.push_back(std::thread(&Object::worker,this, i * num_cubes / (2* num_threads), (i + 1) * num_cubes /  (2* num_threads), next_gen_vec.data()));
         }
 
         for (auto &t : threads) {
             t.join();
         }
         int kk = translations.size();
-        for(auto t : translations){
-            translations.push_back(glm::vec3(t.x, t.y, side_length -1 - t.z));
-            translations.push_back(glm::vec3(t.x, side_length -1 - t.y, t.z));
-            translations.push_back(glm::vec3( side_length -1 -t.x, t.y, t.z));
+        for(int t = 0; t < kk; t++) {
+            translations.push_back(glm::vec3(translations[t].x, translations[t].y, side_length -1 - translations[t].z));
+            translations.push_back(glm::vec3(translations[t].x, side_length - 1 - translations[t].y, translations[t].z));
+            translations.push_back(glm::vec3( side_length -1 -translations[t].x, translations[t].y, translations[t].z));
 
-            translations.push_back(glm::vec3(side_length -1 - t.x, side_length -1 - t.y, t.z));
-            translations.push_back(glm::vec3(t.x, side_length -1 - t.y, side_length -1 - t.z));
-            translations.push_back(glm::vec3(side_length -1 - t.x,  t.y, side_length -1 - t.z));
+            translations.push_back(glm::vec3(side_length -1 - translations[t].x, side_length -1 - translations[t].y, translations[t].z));
+            translations.push_back(glm::vec3(translations[t].x, side_length -1 - translations[t].y, side_length -1 - translations[t].z));
+            translations.push_back(glm::vec3(side_length -1 - translations[t].x,  translations[t].y, side_length -1 - translations[t].z));
 
-            translations.push_back(glm::vec3(side_length -1 - t.x, side_length -1 - t.y, side_length -1 - t.z));
+            translations.push_back(glm::vec3(side_length -1 - translations[t].x, side_length -1 - translations[t].y, side_length -1 - translations[t].z));
         } 
 
         cells_vec = std::move(next_gen_vec);

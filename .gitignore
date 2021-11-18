@@ -1,3 +1,5 @@
+./.gitignore
 ./main
-./utilities
 ./.clangformat
+./.gdb_history
+./.vscode
