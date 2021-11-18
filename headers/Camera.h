@@ -4,7 +4,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 #include <glm/gtx/rotate_vector.hpp>
-
+#include <glm/gtc/matrix_transform.hpp>
 inline float radians(float x) { return 3.141593f * x / 180.0f; }
 // @Class: Camera
 // @Description: Camera class.
@@ -73,5 +73,14 @@ class Camera {
         this->projection =
             glm::perspective(radians(this->fovy), aspect, zNear, zFar);
     }
+
+    void reset_model(glm::vec3 t) {
+        this->model = glm::translate(this->model,t);
+    }
+    void _translate(glm::vec3 t) {
+        this->model = glm::translate(this->model,t);
+    }
+
+
 };
 #endif // CAMERA_H

@@ -6,6 +6,7 @@
 #include "./headers/VertexBuffer.h"
 #include "./headers/WireFrame.h"
 #include "./headers/ArgParser.h"
+#include "./headers/TimerCA.h"
 #include <GL/gl.h>
 #include <GL/glew.h>
 #include <GL/glext.h>
@@ -40,7 +41,9 @@ int ANIM_STEP = 1;
 int RULE;
 int tt = 0;
 int imcount = 0;
-
+double avg_time = 0.0;
+double fc = 0.0;
+TimerCA *tmr;
 // init config
 int SIDE_LENGTH = 0;
 vector<vector<float>> rules;
@@ -72,6 +75,8 @@ WireFrame *wf;
 // glut calls this function whenever it needs to redraw
 void display() {
     // clear the color buffer before each drawing
+    tmr->_start(); // PERFORMANCE TESTING CODE >:0
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     if (LIGHTING_ENABLED)
         glClearColor(0, 0, 0, 0);
@@ -89,6 +94,10 @@ void display() {
 
     wf->draw();
     glutSwapBuffers();
+    double ms_double = tmr->_stop();
+    std::cout.flush();
+    avg_time += ms_double;
+    fc += 1;
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -138,6 +147,7 @@ void keyboard(unsigned char key, int x, int y) {
         break;
     case 'k': // quit
         glutLeaveMainLoop();
+        cout << "[avg frame rate]: " << 1000* fc / (avg_time) << endl; // END PERFORMANCE TESTING CODE >:0
         return;
     };
     glutPostRedisplay();
@@ -214,8 +224,8 @@ void init() {
     glutTimerFunc(0, Timer, 0);
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_CULL_FACE);
-    // glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glAlphaFunc(GL_GREATER, 0.1);
@@ -232,11 +242,13 @@ int main(int argc, char **argv) {
         printHelpMenu();
     }
     init();
+    tmr = new TimerCA(); 
     procArgs(argc, argv);
     c = new Camera(glm::vec3((SIDE_LENGTH / 2.0f), SIDE_LENGTH + 50.0f, SIDE_LENGTH + 50.0f),
                    glm::vec3((SIDE_LENGTH / 2.0f), 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy,
                    aspect, near, far);
-    wf = new WireFrame(2.5f, (float)SIDE_LENGTH, c, "./shaders/shader_nl.vs","./shaders/shader_nl.fs");
+    wf = new WireFrame(2.5f, (float)SIDE_LENGTH, c, "./shaders/shader_nl.vs",
+                       "./shaders/shader_nl.fs");
     cubes->read(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, SIDE_LENGTH, c, RULE);
     glutMainLoop();
     return 0;
