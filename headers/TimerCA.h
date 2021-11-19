@@ -7,7 +7,10 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::duration;
+using std::chrono::milliseconds;
 
 class TimerCA {
 public:

@@ -14,14 +14,14 @@ vec3 lighting()
     float y = position.y;
     float z = position.z;
     // float r = sqrt((x-10.5)*(x-10.5) + (y-10.5)*(y-10.5) + (z-10.5)*(z-10.5));
-    float red = is_wire ? 1.0f : 0.5*position.x/side_length;
-    float green = is_wire ? 1.0f : 0.5*position.y/side_length;
-    float blue = is_wire ? 1.0f : 0.5*position.z/side_length;
+    float red =  0.5*position.x/side_length;
+    float green = 0.5*position.y/side_length;
+    float blue =  0.5*position.z/side_length;
 
     vec3 amb = vec3(red,green,blue);
     vec3 diff = vec3(red,green,blue);
     vec3 spec = vec3(1,1,0);
-    vec3 lpp[3] = vec3[](vec3(side_length, side_length*2+10, side_length),vec3(side_length-5, side_length*2+10, side_length),vec3(+5,side_length, side_length));
+    vec3 lpp[3] = vec3[](vec3(0,0,0),vec3(side_length/2, side_length/2, side_length/2),eye);
     float kl = 0;
     float kq = .01;
     //d s ns
@@ -39,11 +39,9 @@ vec3 lighting()
             float d = length(ll), k = 1.0f/(1.0f + kl*d + kq*d*d);
             vec3 kv = vec3(k, k, k), l = vec3(ll.x/d, ll.y/d, ll.z/d);
             c += diff*md*dot(n, l)*kv;
-        
             vec3 h = normalize(l + v);
             float nh = dot(n, h);
             c += spec*ms*pow(nh, ns)*kv;
-        
         }
     }
     return vec3(c);
@@ -51,11 +49,6 @@ vec3 lighting()
 
 void main() 
 {
-    
-    float x = position.x;
-    float y = position.y;
-    float z = position.z;
-    // float r = sqrt((x-10.5)*(x-10.5) + (y-10.5)*(y-10.5) + (z-10.5)*(z-10.5));
     vec3 c = lighting();
     gl_FragColor = vec4(c.x,c.y,c.z,1.0); // white color
 }

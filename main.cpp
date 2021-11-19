@@ -26,8 +26,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 using namespace std;
-int nv = 8;
-int ni = 12;
+// ======================== CONFIGURATION ========================
 float fstep = 0.9f;
 float near = 5.0f;
 float far = 150.0f;
@@ -40,62 +39,36 @@ string FSHADER_PATH = "./shaders/shader.fs";
 int ANIM_STEP = 1;
 int RULE;
 int tt = 0;
-int imcount = 0;
 double avg_time = 0.0;
 double fc = 0.0;
-TimerCA *tmr;
-// init config
 int SIDE_LENGTH = 0;
-vector<vector<float>> rules;
 
-vector<float> wire_vertices = {
-    // verts			      //colors
-    -5.0f,  -5.0f,  +25.0f, 0.0, 0.0, 0.0, 1.0, // front bottom left
-    +25.0f, -5.0f,  +25.0f, 0.0, 0.0, 0.0, 1.0, // front bottom right
-    +25.0f, +25.0f, +25.0f, 0.0, 0.0, 0.0, 1.0, // front top right
-    -5.0f,  +25.0f, +25.0f, 0.0, 0.0, 0.0, 1.0, // front top left
-    -5.0f,  -5.0f,  -5.0f,  0.0, 0.0, 0.0, 1.0, // back bottom left
-    +25.0f, -5.0f,  -5.0f,  0.0, 0.0, 0.0, 1.0, // back bottom right
-    +25.0f, +25.0f, -5.0f,  0.0, 0.0, 0.0, 1.0, // back top right
-    -5.0f,  +25.0f, -5.0f,  0.0, 0.0, 0.0, 1.0, // back top left
-
-}; // back bottom left --> front bottom right
-
-vector<unsigned int> wire_elements = {0, 1, 1, 2, 2, 3, 3, 0, // Front
-                                      4, 5, 5, 6, 6, 7, 7, 4, // Back
-                                      0, 4, 1, 5, 2, 6, 3, 7};
-
-// class initialization
+// ======================== INIT OBJECTS ========================
+TimerCA *tmr;
 Shader *sh;
 Camera *c;
 Object *cubes = new Object();
 VertexBufferIndex *wire_vb;
 Shader *wire_sh;
 WireFrame *wf;
-// glut calls this function whenever it needs to redraw
-void display() {
-    // clear the color buffer before each drawing
-    tmr->_start(); // PERFORMANCE TESTING CODE >:0
+WireFrame *light_wf;
 
+void display() {
+    tmr->_start(); // PERFORMANCE TESTING CODE >:0
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    if (LIGHTING_ENABLED)
-        glClearColor(0, 0, 0, 0);
-    else
-        glClearColor(1, 1, 1, 1);
+    glClearColor(1 - LIGHTING_ENABLED, 1 - LIGHTING_ENABLED, 1 - LIGHTING_ENABLED,
+                 1 - LIGHTING_ENABLED);
     cubes->draw();
-    if (animation) {
-        if (tt % ANIM_STEP == 0) {
-            tt = 0;
-            cubes->update();
-        }
+    if (animation && tt % ANIM_STEP == 0) {
+        tt = 0;
+        cubes->update();
     }
     if (rotation)
         c->rotate(1.0f);
-
     wf->draw();
+    // light_wf->draw();
     glutSwapBuffers();
     double ms_double = tmr->_stop();
-    std::cout.flush();
     avg_time += ms_double;
     fc += 1;
 }
@@ -147,7 +120,8 @@ void keyboard(unsigned char key, int x, int y) {
         break;
     case 'k': // quit
         glutLeaveMainLoop();
-        cout << "[avg frame rate]: " << 1000* fc / (avg_time) << endl; // END PERFORMANCE TESTING CODE >:0
+        cout << "[avg frame rate]: " << 1000 * fc / (avg_time) << " f/s"
+             << endl; // END PERFORMANCE TESTING CODE >:0
         return;
     };
     glutPostRedisplay();
@@ -242,14 +216,16 @@ int main(int argc, char **argv) {
         printHelpMenu();
     }
     init();
-    tmr = new TimerCA(); 
+    tmr = new TimerCA();
     procArgs(argc, argv);
     c = new Camera(glm::vec3((SIDE_LENGTH / 2.0f), SIDE_LENGTH + 50.0f, SIDE_LENGTH + 50.0f),
                    glm::vec3((SIDE_LENGTH / 2.0f), 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy,
                    aspect, near, far);
     wf = new WireFrame(2.5f, (float)SIDE_LENGTH, c, "./shaders/shader_nl.vs",
                        "./shaders/shader_nl.fs");
-    cubes->read(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, SIDE_LENGTH, c, RULE);
+    // light_wf = new WireFrame(2.5f, (float)10, c, "./shaders/shader_nl.vs",
+                            //  "./shaders/shader_nl.fs");
+    cubes->init(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, SIDE_LENGTH, c, RULE);
     glutMainLoop();
     return 0;
 }

@@ -52,8 +52,9 @@ class Camera {
     }
 
     glm::mat4 pvm() { return this->projection * this->view * this->model; }
+    
     glm::mat4 pv() { return this->projection * this->view;}
-
+    
     glm::mat4 getModel() { return this->model; }
 
     void _lookat(glm::vec3 eye, glm::vec3 target, glm::vec3 up) {
