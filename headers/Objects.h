@@ -28,12 +28,14 @@ Encapsulation of all objects in the program.
 #include <thread>
 #include <vector>
 #define REFLECT_DIVISOR 2
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
 std::mutex mtx;
 using namespace std;
 DataStore *data = new DataStore();
 
 inline void to3D(int idx, int *arr, int side_length) {
-    /*Converts 1d coordinate to 3d x,y,z*/
+	/*Converts 1d coordinate to 3d x,y,z*/
 	int z = idx / (side_length * side_length);
 	idx -= (z * side_length * side_length);
 	int y = idx / side_length;
@@ -60,7 +62,7 @@ public:
 	vector<unsigned int> btranslations;
 	vector<vector<unsigned int>> pre_compute;
 	SparseSet<unsigned> bset;
-
+	const int NUMWORLDS = 50;
 	// OPENGL ATTRIBUTES
 	bool LIGHTING_ENABLED;
 	VertexBuffer *vb;
@@ -121,7 +123,6 @@ public:
 						cells_vec[(int)curr] = lifecycle;
 						bset.insert((x | (y << 8) | (z << 16)));
 						// }
-
 					}
 				}
 			}
@@ -135,7 +136,7 @@ public:
 			             side_length * side_length * (side_length / 2.0);
 			cells_vec[(int)curr] = lifecycle;
 			bset.insert(((unsigned int)(side_length / 2) | (y << 8) |
-			                         (unsigned int)(side_length / 2) << 16));
+			             (unsigned int)(side_length / 2) << 16));
 		}
 
 		for (int x = offset; x < side_length - offset; x++) {
@@ -143,7 +144,7 @@ public:
 			             side_length * side_length * (side_length / 2.0);
 			cells_vec[(int)curr] = lifecycle;
 			bset.insert((x | (unsigned int)(side_length / 2) << 8 |
-			                         (unsigned int)(side_length / 2) << 16));
+			             (unsigned int)(side_length / 2) << 16));
 		}
 
 		for (int z = offset; z < side_length - offset; z++) {
@@ -151,15 +152,14 @@ public:
 			             side_length * side_length * z;
 			cells_vec[(int)curr] = lifecycle;
 			bset.insert(((unsigned int)(side_length / 2) |
-			                         (unsigned int)(side_length / 2) << 8 |
-			                         (z << 16)));
+			             (unsigned int)(side_length / 2) << 8 | (z << 16)));
 		}
 	};
 
 	void placeSubCube(int px, int py, int pz, int len) {
-		/* @Function: placeSubCube places a subcube at the center of the grid 
-            TODO: make this work better -- still in BETA
-        */
+		/* @Function: placeSubCube places a subcube at the center of the grid
+		        TODO: make this work better -- still in BETA
+		    */
 		// assert(px + len <= side_length && py + len <= side_length && pz + len <=
 		// side_length);
 		for (int z = 0; z < 5; z++) {
@@ -173,8 +173,17 @@ public:
 		}
 	};
 
-	string init(string vertex_shader, string fragment_shader, bool LIGHTING_ENABLED,
-	          int sl = 20, Camera *camera = 0, int rule = 0) {
+	void printProgress(double percentage) {
+		int val = (int)(percentage * 100);
+		int lpad = (int)(percentage * PBWIDTH);
+		int rpad = PBWIDTH - lpad;
+		printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+		fflush(stdout);
+	}
+
+	string init(string vertex_shader, string fragment_shader,
+	            bool LIGHTING_ENABLED, int sl = 20, Camera *camera = 0,
+	            int rule = 0) {
 		/* @Function: init initializes the object
 		 * @Param: vertex_shader - the vertex shader file
 		 * @Param: fragment_shader - the fragment shader file
@@ -183,9 +192,8 @@ public:
 		 * @Param: camera - the camera
 		 * @Param: rule - the rule number
 		 */
-		tmr->_start();
 		this->num_cubes = sl * sl * sl;
-		// pre_compute = vector<vector<unsigned int>>(10, <vector>unsigned);
+		pre_compute = vector<vector<unsigned int>>(NUMWORLDS);
 		this->LIGHTING_ENABLED = LIGHTING_ENABLED;
 		this->nv = this->num_cubes * 8, this->ni = this->num_cubes * 12;
 		cout << "[status] Num Cubes: " << this->num_cubes << endl;
@@ -195,14 +203,27 @@ public:
 		readRuleset(rule);
 		cout << "[status] Generating World..." << endl;
 		// init world state
+		printProgress(.10f); // load bar
 		placeSphere(5.0f);
+		printProgress(.20f); // load bar
 		placeCross(5);
-		double init_render = tmr->_stop();
+		printProgress(.30f); // load bar
 		cam = camera;
 		sh = new Shader(vertex_shader.c_str(), fragment_shader.c_str());
+		printProgress(.40f); // load bar
 		vb = new VertexBuffer(3 * 12, &pos_norms[0]);
+		printProgress(.70f); // load bar
 		vbi = new VertexBufferInstanced(num_cubes);
-		cout << "[Cube Generation] " << init_render << " ms" << endl;
+		printProgress(1.0f); // load bar
+		cout << "\n[status] Precomputing " << NUMWORLDS << " generations:" << endl;
+		tmr->_start();
+		for (int i = 0; i < NUMWORLDS; i++) {
+			printProgress((i + 1) / (float)NUMWORLDS); // load bar
+			update(i);
+		}
+		double init_render = tmr->_stop();
+
+		cout << "\n[Cube Generation] " << init_render << " ms" << endl;
 		return to_string(init_render);
 	};
 
@@ -256,10 +277,10 @@ public:
 		}
 	};
 
-	void update() {
+	void update(int g = 0) {
 		/* @Function: inits threads to update state of world and sets new world
 		   state to current state
-        */
+		    */
 		this->bset.clear();
 		vector<int> next_gen_vec(num_cubes, 0);
 
@@ -291,17 +312,18 @@ public:
 				    (x | ((side_length - 1 - y) << 8) | ((side_length - 1 - z) << 16)));
 				bset.insert(
 				    ((side_length - 1 - x) | (y << 8) | ((side_length - 1 - z) << 16)));
-				bset.insert(((side_length - 1 - x) |
-				                         ((side_length - 1 - y) << 8) |
-				                         ((side_length - 1 - z) << 16)));
+				bset.insert(((side_length - 1 - x) | ((side_length - 1 - y) << 8) |
+				             ((side_length - 1 - z) << 16)));
 			}
 		}
-    
-        // set<int> s;
-        // unsigned size = btranslations.size();
-        // for( unsigned i = 0; i < size; ++i ) s.insert( btranslations[i] );
-        // btranslations.assign( s.begin(), s.end() );
-		// NOTE: in theory this should help performance but doesn't @TODO: figure this out 
+		pre_compute[g] = vector<unsigned int>(bset.size_);
+		pre_compute[g] = std::move(vector<unsigned int>(bset.begin(), bset.end()));
+		// set<int> s;
+		// unsigned size = btranslations.size();
+		// for( unsigned i = 0; i < size; ++i ) s.insert( btranslations[i] );
+		// btranslations.assign( s.begin(), s.end() );
+		// NOTE: in theory this should help performance but doesn't @TODO: figure
+		// this out
 		// std::sort(translations.begin(), translations.end(),[this](const glm::vec3
 		// &struct1, const
 		// glm::vec3 &struct2) {
@@ -313,19 +335,18 @@ public:
 
 	void simple_update(int floor) { cout << "simple" << endl; }
 
-	void draw() {
+	void draw(int dc) {
 		sh->use();
 		sh->setMat4("pvm", cam->pvm());
 		sh->setMat4("model", cam->getModel());
 		sh->setVec3("eye", cam->eye.x, cam->eye.y, cam->eye.z);
 		sh->setFloat("side_length", 0.5f * side_length);
 		vb->use();
-        vbi->use();
-		glBufferSubData(GL_ARRAY_BUFFER, 0,
-		                bset.size_ * sizeof(unsigned int),
-		                bset.dense.data());
+		vbi->use();
+		glBufferSubData(GL_ARRAY_BUFFER, 0, bset.size_ * sizeof(unsigned int),
+		                pre_compute[dc].data());
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 3 * 12, bset.size_);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 3 * 12, pre_compute[dc].size());
 	}
 };
 
