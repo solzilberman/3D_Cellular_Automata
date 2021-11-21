@@ -1,9 +1,16 @@
+11-20-2021
+Todo List
+[ ] Clean procomp code
+[ ] Write pixel buffer to file
+[ ] ffmpeg pipeline
+[ ] fix config
+====================================================
 11-19-2021
 Todo List
 [x] Fix camera rotation
-[ ] optimize state calc loop
+[ ] optimize state calc loop [later]
 [x] implement sparse set for translations
-[ ] combine shaders to avoid switching overhead
+[ ] combine shaders to avoid switching overhead [not worth time]
 ====================================================
 11-18-2021
 Todo List

@@ -31,28 +31,31 @@
 #include <algorithm>
 #include <ctime>
 
-#define SCREEN_WIDTH 500
-#define SCREEN_HEIGHT 500
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "./headers/stb_image_write.h"
+
+int SCREEN_WIDTH =  700;
+int SCREEN_HEIGHT = 700;
 #define PROFILING 0
 #define GLM_ENABLE_EXPERIMENTAL
 
 using namespace std;
 // ======================== CONFIGURATION / GLOBAL VARS ========================
-float fstep = 0.9f; // camera
-float near = 1.0f; // camera
-float far = 200.0f; // camera
-float fovy = 65.0f; // camera
+float fstep = 0.9f;                          // camera
+float near = 1.0f;                           // camera
+float far = 200.0f;                          // camera
+float fovy = 65.0f;                          // camera
 float aspect = SCREEN_HEIGHT / SCREEN_WIDTH; // camera
-bool rotation = false, animation = false; // camera
-bool LIGHTING_ENABLED = true; // shaders
-string VSHADER_PATH = "./shaders/shader.vs"; //shaders
+bool rotation = false, animation = false;    // camera
+bool LIGHTING_ENABLED = true;                // shaders
+string VSHADER_PATH = "./shaders/shader.vs"; // shaders
 string FSHADER_PATH = "./shaders/shader.fs"; // shaders
-int ANIM_STEP = 1; // display
-int RULE; // CA
-int tt = 0; // generic
-double avg_time = 0.0; // profiling
-double fc = 0.0; // profiling
-int SIDE_LENGTH = 0; // CA
+int ANIM_STEP = 1;                           // display
+int RULE;                                    // CA
+int tt = 0;                                  // generic
+double avg_time = 0.0;                       // profiling
+double fc = 0.0;                             // profiling
+int SIDE_LENGTH = 0;                         // CA
 int NWORLDS = 30;
 // ======================== PROFILING CODE ========================
 TimerCA *tmr;
@@ -67,6 +70,7 @@ VertexBufferIndex *wire_vb;
 Shader *wire_sh;
 WireFrame *wf;
 WireFrame *light_wf;
+char * buffer = new char[700 * 700 * 4];
 
 void _log_performance(double uptime = 0.0) {
 	/*
@@ -114,6 +118,11 @@ void display() {
 		c->rotate(1.0f);
 	wf->draw();
 	glutSwapBuffers();
+	glReadPixels( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE,
+	             buffer);
+	string fn = "./images/image" + to_string(dc) + ".png";
+	stbi_write_png(fn.c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, 4, buffer, SCREEN_WIDTH * 4);
+
 	double ms_double = tmr->_stop();
 	avg_time += ms_double;
 	fc += 1;
@@ -181,18 +190,28 @@ void Timer(int value) {
 }
 
 void readConfig(string filename) {
-	ifstream istr(filename);
-	istr >> SIDE_LENGTH;
-	istr >> LIGHTING_ENABLED;
-	istr >> RULE;
-	istr >> animation;
-	istr >> rotation;
-    istr >> ANIM_STEP;
-    istr >> NWORLDS;
+	ifstream file(filename.c_str());
+	string line[10];
+	if (file.is_open()) {
+		int i = 0;
+		while (getline(file, line[i])) {
+			line[i] = line[i].substr(line[i].find(":")+1,line[i].length());
+			cout << line[i] << endl;
+			i++;
+		}
+	}
+	SIDE_LENGTH = atoi(line[0].c_str());    		 
+	LIGHTING_ENABLED = atoi(line[1].c_str()); 
+	RULE = atoi(line[2].c_str());				
+	animation = atoi(line[3].c_str());			
+	rotation = atoi(line[4].c_str());			
+	ANIM_STEP = atoi(line[5].c_str());			
+	NWORLDS = atoi(line[6].c_str());	
 	VSHADER_PATH =
 	    LIGHTING_ENABLED ? "./shaders/shader.vs" : "./shaders/shader_nl.vs";
 	FSHADER_PATH =
 	    LIGHTING_ENABLED ? "./shaders/shader.fs" : "./shaders/shader_nl.fs";
+
 }
 
 void procArgs(int argc, char **argv) {
@@ -278,8 +297,9 @@ int main(int argc, char **argv) {
 	                   "./shaders/shader_nl.fs");
 	// light_wf = new WireFrame(2.5f, (float)10, c, "./shaders/shader_nl.vs",
 	//  "./shaders/shader_nl.fs");
-	TIME_2_RENDER = cubes->init(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED,
-	                            SIDE_LENGTH, c, RULE, NWORLDS); // TODO: FIX NWORLDS NOT BEING READ IN CORRECTLY
+	TIME_2_RENDER = cubes->init(
+	    VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, SIDE_LENGTH, c, RULE,
+	    NWORLDS); // TODO: FIX NWORLDS NOT BEING READ IN CORRECTLY
 
 	glutMainLoop();
 	return 0;
