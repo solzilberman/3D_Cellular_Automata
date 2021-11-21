@@ -1,3 +1,18 @@
+11-19-2021
+Todo List
+[x] Fix camera rotation
+[ ] optimize state calc loop
+[x] implement sparse set for translations
+[ ] combine shaders to avoid switching overhead
+====================================================
+11-18-2021
+Todo List
+[x] Bitwise translation vectors
+[x] sphere,subcube,cross methods for state init
+[ ] optimize state calc loop
+[ ] cuda??? what is that 
+[x] benchmark performance in logfile
+====================================================
 11-17-2021
 Todo List
 [x] Incident Rendering
@@ -15,4 +30,4 @@ Todo List
 Todo List
 [x] Blinn Lighting
 [x] WireFrame Class encapsulate entire render step
-[ ] Config file containing all info
+[x] Config file containing all info

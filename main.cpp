@@ -1,5 +1,15 @@
-// 3D Cellular Automata
-// @author - Sol Zilberman
+/*
+  3D Cellular Automata
+  @author - Sol Zilberman
+    _______
+   /_____ /|  
+  | o  o | |
+  |   u  | |
+  |______|/ 
+  
+*/
+
+
 #include "./headers/Camera.h"
 #include "./headers/Objects.h"
 #include "./headers/Shader.h"
@@ -20,17 +30,19 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <ctime>
 
 #define SCREEN_WIDTH 500
 #define SCREEN_HEIGHT 500
+#define PROFILING 0
 #define GLM_ENABLE_EXPERIMENTAL
 
 using namespace std;
 // ======================== CONFIGURATION ========================
 float fstep = 0.9f;
-float near = 5.0f;
+float near = 1.0f;
 float far = 150.0f;
-float fovy = 45.0f;
+float fovy = 50.0f;
 float aspect = SCREEN_HEIGHT / SCREEN_WIDTH;
 bool rotation = false, animation = false;
 bool LIGHTING_ENABLED = true;
@@ -42,9 +54,13 @@ int tt = 0;
 double avg_time = 0.0;
 double fc = 0.0;
 int SIDE_LENGTH = 0;
+// ======================== PROFILING CODE ========================
+TimerCA *tmr;
+TimerCA *MAIN_PROGRAM_TIMER;
+string TIME_2_RENDER;
+
 
 // ======================== INIT OBJECTS ========================
-TimerCA *tmr;
 Shader *sh;
 Camera *c;
 Object *cubes = new Object();
@@ -53,7 +69,43 @@ Shader *wire_sh;
 WireFrame *wf;
 WireFrame *light_wf;
 
+void _log_performance(double uptime = 0.0) {
+    /* 
+    @Function - _log_performance
+    @Description - Logs the performance of the program
+    */
+    ofstream ostr("./logs/performance.log",std::ios::app);
+    std::time_t t = std::time(0);   // get time now
+    std::tm* now = std::localtime(&t);
+    ostr << (now->tm_year + 1900) << '-' 
+         << (now->tm_mon + 1) << '-'
+         <<  now->tm_mday
+         << endl;
+    ostr << "[PROFILING MODE] " << PROFILING << endl;
+    ostr << "[Num Cubes] " << SIDE_LENGTH * SIDE_LENGTH * SIDE_LENGTH << endl;
+    ostr << "[TIME 2 BUILD WRLD] " << TIME_2_RENDER << endl;
+    ostr << "[RULE] " << RULE << endl;
+    ostr << "[GENERATIONS] " << fc << endl;
+    ostr << "[UPTIME] " << uptime / 1000.0 << " s" << endl;
+    ostr << "[avg frame rate]: " << 1000 * fc / (avg_time) << " f/s" << endl;
+    ostr << "======================================================" << endl;
+}
+
+
 void display() {
+    /*
+    @Function - display
+    @Description - Opengl display function to render 
+                    all objects and swap gpu buffers
+    */
+    if (PROFILING && fc >= 30) {
+        cout << "[avg frame rate]: " << 1000 * fc / (avg_time) << " f/s"
+             << endl; // END PERFORMANCE TESTING CODE >:0
+        double uptime = MAIN_PROGRAM_TIMER->_stop();
+        _log_performance(uptime);     
+        glutLeaveMainLoop();
+        exit(0);
+    }
     tmr->_start(); // PERFORMANCE TESTING CODE >:0
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(1 - LIGHTING_ENABLED, 1 - LIGHTING_ENABLED, 1 - LIGHTING_ENABLED,
@@ -96,7 +148,6 @@ void keyboard(unsigned char key, int x, int y) {
     case 'a':
         // translate left
         c->translate(glm::vec3(1.0f, 0.0f, 0.0f));
-
         break;
     case 'd':
         // translate right
@@ -119,9 +170,11 @@ void keyboard(unsigned char key, int x, int y) {
         c->translate(glm::vec3(0.0f, 1.0f, 0.0f));
         break;
     case 'k': // quit
-        glutLeaveMainLoop();
         cout << "[avg frame rate]: " << 1000 * fc / (avg_time) << " f/s"
              << endl; // END PERFORMANCE TESTING CODE >:0
+        double uptime = MAIN_PROGRAM_TIMER->_stop();
+        _log_performance(uptime);     
+        glutLeaveMainLoop();
         return;
     };
     glutPostRedisplay();
@@ -145,10 +198,8 @@ void readConfig(string filename) {
 }
 
 void procArgs(int argc, char **argv) {
-
     string arg1, arg2, arg3;
     switch (argc) {
-
     case 2:
         arg1 = string(argv[1]);
         RULE = atoi(arg1.c_str());
@@ -217,15 +268,17 @@ int main(int argc, char **argv) {
     }
     init();
     tmr = new TimerCA();
+    MAIN_PROGRAM_TIMER = new TimerCA();
+    MAIN_PROGRAM_TIMER->_start();
     procArgs(argc, argv);
     c = new Camera(glm::vec3((SIDE_LENGTH / 2.0f), SIDE_LENGTH + 50.0f, SIDE_LENGTH + 50.0f),
-                   glm::vec3((SIDE_LENGTH / 2.0f), 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), fovy,
+                   glm::vec3((SIDE_LENGTH / 2.0f), (SIDE_LENGTH / 2.0f), (SIDE_LENGTH / 2.0f)), glm::vec3(0.0, 1.0, 0.0), fovy,
                    aspect, near, far);
     wf = new WireFrame(2.5f, (float)SIDE_LENGTH, c, "./shaders/shader_nl.vs",
                        "./shaders/shader_nl.fs");
     // light_wf = new WireFrame(2.5f, (float)10, c, "./shaders/shader_nl.vs",
                             //  "./shaders/shader_nl.fs");
-    cubes->init(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, SIDE_LENGTH, c, RULE);
+    TIME_2_RENDER = cubes->init(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED, SIDE_LENGTH, c, RULE);
     glutMainLoop();
     return 0;
 }

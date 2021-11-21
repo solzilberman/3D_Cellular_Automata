@@ -3,9 +3,12 @@
  */
 #ifndef CAMERA_H
 #define CAMERA_H
+#include <stdio.h>
+#include <iostream>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 inline float radians(float x) { return 3.141593f * x / 180.0f; }
+using namespace std;
 // @Class: Camera
 // @Description: Camera class.
 class Camera {
@@ -47,8 +50,19 @@ class Camera {
 
     // rotate camera
     void rotate(float angle) {
-        this->eye = rotateY(this->eye, radians(angle));
-        this->view = glm::lookAt(this->eye, this->target, this->up);
+    //  glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), radians(angle), up);
+    //  this->view = rotate * this->view;
+        glm::vec4 position = glm::vec4(this->eye.x, this->eye.y, this->eye.z, 1.0f);
+        glm::vec4 pivot = glm::vec4(this->target.x, this->target.y, this->target.z,
+                              1.0f);
+        float deltaAngleX = radians(angle);
+        glm::mat4x4 rotationMatrixX(1.0f);
+        rotationMatrixX = glm::rotate(rotationMatrixX, deltaAngleX, this->up);
+        position = (rotationMatrixX * (position - pivot)) + pivot;
+        this->eye = glm::vec3(position.x, position.y,position.z );
+        this->view = glm::lookAt( this->eye, this->target, this->up);
+
+
     }
 
     glm::mat4 pvm() { return this->projection * this->view * this->model; }

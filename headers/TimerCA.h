@@ -15,6 +15,7 @@ using std::chrono::milliseconds;
 class TimerCA {
 public:
     std::chrono::time_point<std::chrono::high_resolution_clock> start;   // start time
+    std::chrono::time_point<std::chrono::high_resolution_clock> end;   // start time
     TimerCA() {
         this->start = high_resolution_clock::now();
     }
@@ -22,7 +23,7 @@ public:
         this->start = high_resolution_clock::now();
     }
     double _stop() { // returns time in milliseconds
-        auto end = high_resolution_clock::now();
+        end = high_resolution_clock::now();
         duration<double, std::milli> ms = end - start;
         return ms.count();
     }
