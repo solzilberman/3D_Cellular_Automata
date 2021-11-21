@@ -37,22 +37,23 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 using namespace std;
-// ======================== CONFIGURATION ========================
-float fstep = 0.9f;
-float near = 1.0f;
-float far = 200.0f;
-float fovy = 65.0f;
-float aspect = SCREEN_HEIGHT / SCREEN_WIDTH;
-bool rotation = false, animation = false;
-bool LIGHTING_ENABLED = true;
-string VSHADER_PATH = "./shaders/shader.vs";
-string FSHADER_PATH = "./shaders/shader.fs";
-int ANIM_STEP = 1;
-int RULE;
-int tt = 0;
-double avg_time = 0.0;
-double fc = 0.0;
-int SIDE_LENGTH = 0;
+// ======================== CONFIGURATION / GLOBAL VARS ========================
+float fstep = 0.9f; // camera
+float near = 1.0f; // camera
+float far = 200.0f; // camera
+float fovy = 65.0f; // camera
+float aspect = SCREEN_HEIGHT / SCREEN_WIDTH; // camera
+bool rotation = false, animation = false; // camera
+bool LIGHTING_ENABLED = true; // shaders
+string VSHADER_PATH = "./shaders/shader.vs"; //shaders
+string FSHADER_PATH = "./shaders/shader.fs"; // shaders
+int ANIM_STEP = 1; // display
+int RULE; // CA
+int tt = 0; // generic
+double avg_time = 0.0; // profiling
+double fc = 0.0; // profiling
+int SIDE_LENGTH = 0; // CA
+int NWORLDS = 30;
 // ======================== PROFILING CODE ========================
 TimerCA *tmr;
 TimerCA *MAIN_PROGRAM_TIMER;
@@ -109,14 +110,9 @@ void display() {
 
 	cubes->draw(dc % cubes->NUMWORLDS);
 	dc += animation;
-	// if (animation && tt % ANIM_STEP == 0) {
-	//     tt = 0;
-	//     // cubes->update();
-	// }
 	if (rotation)
 		c->rotate(1.0f);
 	wf->draw();
-	// light_wf->draw();
 	glutSwapBuffers();
 	double ms_double = tmr->_stop();
 	avg_time += ms_double;
@@ -191,6 +187,8 @@ void readConfig(string filename) {
 	istr >> RULE;
 	istr >> animation;
 	istr >> rotation;
+    istr >> ANIM_STEP;
+    istr >> NWORLDS;
 	VSHADER_PATH =
 	    LIGHTING_ENABLED ? "./shaders/shader.vs" : "./shaders/shader_nl.vs";
 	FSHADER_PATH =
@@ -270,7 +268,7 @@ int main(int argc, char **argv) {
 	tmr = new TimerCA();
 	MAIN_PROGRAM_TIMER = new TimerCA();
 	MAIN_PROGRAM_TIMER->_start();
-	procArgs(argc, argv);
+	// procArgs(argc, argv);
 	c = new Camera(
 	    glm::vec3((SIDE_LENGTH / 2.0f), SIDE_LENGTH + 50.0f, SIDE_LENGTH + 50.0f),
 	    glm::vec3((SIDE_LENGTH / 2.0f), (SIDE_LENGTH / 2.0f),
@@ -281,7 +279,7 @@ int main(int argc, char **argv) {
 	// light_wf = new WireFrame(2.5f, (float)10, c, "./shaders/shader_nl.vs",
 	//  "./shaders/shader_nl.fs");
 	TIME_2_RENDER = cubes->init(VSHADER_PATH, FSHADER_PATH, LIGHTING_ENABLED,
-	                            SIDE_LENGTH, c, RULE);
+	                            SIDE_LENGTH, c, RULE, NWORLDS); // TODO: FIX NWORLDS NOT BEING READ IN CORRECTLY
 
 	glutMainLoop();
 	return 0;

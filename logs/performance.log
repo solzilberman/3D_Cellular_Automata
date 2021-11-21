@@ -1259,3 +1259,48 @@
 [UPTIME] 22.6756 s
 [avg frame rate]: 10.955 f/s
 ======================================================
+2021-11-20
+[PROFILING MODE] 0
+[Num Cubes] 125000
+[TIME 2 BUILD WRLD] 3304.001300
+[RULE] 7
+[GENERATIONS] 79
+[UPTIME] 10.5081 s
+[avg frame rate]: 12.6169 f/s
+======================================================
+2021-11-20
+[PROFILING MODE] 0
+[Num Cubes] 1000000
+[TIME 2 BUILD WRLD] 12830.704700
+[RULE] 7
+[GENERATIONS] 1329
+[UPTIME] 39.5935 s
+[avg frame rate]: 64.7758 f/s
+======================================================
+2021-11-20
+[PROFILING MODE] 0
+[Num Cubes] 1000000
+[TIME 2 BUILD WRLD] 13306.724400
+[RULE] 7
+[GENERATIONS] 666
+[UPTIME] 25.7446 s
+[avg frame rate]: 108.555 f/s
+======================================================
+2021-11-20
+[PROFILING MODE] 0
+[Num Cubes] 1000000
+[TIME 2 BUILD WRLD] 13065.412900
+[RULE] 7
+[GENERATIONS] 372
+[UPTIME] 24.3323 s
+[avg frame rate]: 71.0805 f/s
+======================================================
+2021-11-20
+[PROFILING MODE] 0
+[Num Cubes] 1000000
+[TIME 2 BUILD WRLD] 13303.180600
+[RULE] 7
+[GENERATIONS] 272
+[UPTIME] 21.0129 s
+[avg frame rate]: 170.255 f/s
+======================================================

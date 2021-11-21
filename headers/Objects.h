@@ -62,7 +62,7 @@ public:
 	vector<unsigned int> btranslations;
 	vector<vector<unsigned int>> pre_compute;
 	SparseSet<unsigned> bset;
-	const int NUMWORLDS = 50;
+	int NUMWORLDS = 50;
 	// OPENGL ATTRIBUTES
 	bool LIGHTING_ENABLED;
 	VertexBuffer *vb;
@@ -183,7 +183,7 @@ public:
 
 	string init(string vertex_shader, string fragment_shader,
 	            bool LIGHTING_ENABLED, int sl = 20, Camera *camera = 0,
-	            int rule = 0) {
+	            int rule = 0, int NWORLDS = 30) {
 		/* @Function: init initializes the object
 		 * @Param: vertex_shader - the vertex shader file
 		 * @Param: fragment_shader - the fragment shader file
@@ -191,8 +191,10 @@ public:
 		 * @Param: sl - side length of the cube
 		 * @Param: camera - the camera
 		 * @Param: rule - the rule number
+		 * @Param: NWORLDS generations to precompute
 		 */
 		this->num_cubes = sl * sl * sl;
+		this->NUMWORLDS = NWORLDS;
 		pre_compute = vector<vector<unsigned int>>(NUMWORLDS);
 		this->LIGHTING_ENABLED = LIGHTING_ENABLED;
 		this->nv = this->num_cubes * 8, this->ni = this->num_cubes * 12;
