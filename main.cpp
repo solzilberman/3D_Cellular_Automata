@@ -36,7 +36,7 @@
 
 int SCREEN_WIDTH =  700;
 int SCREEN_HEIGHT = 700;
-#define PROFILING 0
+#define PROFILING 1
 #define GLM_ENABLE_EXPERIMENTAL
 
 using namespace std;
@@ -99,7 +99,7 @@ void display() {
 	@Description - Opengl display function to render
 	                all objects and swap gpu buffers
 	*/
-	if (PROFILING && fc >= 30) {
+	if (PROFILING && fc >= NWORLDS) {
 		cout << "[avg frame rate]: " << 1000 * fc / (avg_time) << " f/s"
 		     << endl; // END PERFORMANCE TESTING CODE >:0
 		double uptime = MAIN_PROGRAM_TIMER->_stop();
@@ -122,7 +122,6 @@ void display() {
 	             buffer);
 	string fn = "./images/image" + to_string(dc) + ".png";
 	stbi_write_png(fn.c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, 4, buffer, SCREEN_WIDTH * 4);
-
 	double ms_double = tmr->_stop();
 	avg_time += ms_double;
 	fc += 1;
