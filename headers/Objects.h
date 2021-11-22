@@ -219,7 +219,6 @@ public:
     printProgress(1.0f); // load bar
     cout << "\n[status] Precomputing " << NUMWORLDS << " generations:" << endl;
     tmr->_start();
-	cout << NUMWORLDS << endl;
     if (NUMWORLDS > 0) {
       for (int i = 0; i < NUMWORLDS; i++) {
         printProgress((i + 1) / (float)NUMWORLDS); // load bar
@@ -321,8 +320,10 @@ public:
                      ((side_length - 1 - z) << 16)));
       }
     }
-    pre_compute[g] = vector<unsigned int>(bset.size_);
-    pre_compute[g] = std::move(vector<unsigned int>(bset.begin(), bset.end()));
+	if(NUMWORLDS > 0) {
+    	pre_compute[g] = vector<unsigned int>(bset.size_);
+    	pre_compute[g] = std::move(vector<unsigned int>(bset.begin(), bset.end()));
+	}
     // set<int> s;
     // unsigned size = btranslations.size();
     // for( unsigned i = 0; i < size; ++i ) s.insert( btranslations[i] );
@@ -351,7 +352,7 @@ public:
     glBufferSubData(GL_ARRAY_BUFFER, 0, bset.size_ * sizeof(unsigned int),
                     this->NUMWORLDS == 0 ? vector<unsigned int>(bset.begin(), bset.end()).data() : pre_compute[dc].data());
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 3 * 12, bset.size_);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 3 * 12, this->NUMWORLDS == 0 ? bset.size_ : pre_compute[dc].size());
   }
 };
 
