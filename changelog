@@ -1,9 +1,10 @@
 11-20-2021
 Todo List
+[ ] turn precompute on/off
 [ ] Clean procomp code
-[ ] Write pixel buffer to file
-[ ] ffmpeg pipeline
-[ ] fix config
+[x] Write pixel buffer to file
+[x] ffmpeg pipeline
+[x] fix config
 ====================================================
 11-19-2021
 Todo List

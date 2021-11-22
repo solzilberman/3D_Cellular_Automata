@@ -46,17 +46,18 @@ float near = 1.0f;                           // camera
 float far = 200.0f;                          // camera
 float fovy = 65.0f;                          // camera
 float aspect = SCREEN_HEIGHT / SCREEN_WIDTH; // camera
-bool rotation = false, animation = false;    // camera
-bool LIGHTING_ENABLED = true;                // shaders
-string VSHADER_PATH = "./shaders/shader.vs"; // shaders
-string FSHADER_PATH = "./shaders/shader.fs"; // shaders
-int ANIM_STEP = 1;                           // display
-int RULE;                                    // CA
-int tt = 0;                                  // generic
+bool rotation = false, animation = false;    // camera  [CONFIG]
+int ANIM_STEP = 1;                           // display [CONFIG]
+bool LIGHTING_ENABLED = true;                // shaders [CONFIG]
+string VSHADER_PATH = "./shaders/shader.vs"; // shaders 
+string FSHADER_PATH = "./shaders/shader.fs"; // shaders 
+bool SAVE_OUTPUT_FLAG=false;				 // display [CONFIG]
+int tt = 0;                                  // generic  
 double avg_time = 0.0;                       // profiling
 double fc = 0.0;                             // profiling
-int SIDE_LENGTH = 0;                         // CA
-int NWORLDS = 30;
+int RULE;                                    // CA      [CONFIG]
+int SIDE_LENGTH = 0;                         // CA		[CONFIG]
+int NWORLDS = 30;							 // CA      [CONFIG]
 // ======================== PROFILING CODE ========================
 TimerCA *tmr;
 TimerCA *MAIN_PROGRAM_TIMER;
@@ -118,10 +119,11 @@ void display() {
 		c->rotate(1.0f);
 	wf->draw();
 	glutSwapBuffers();
+	/* IMAGE WRITING CODE
 	glReadPixels( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE,
 	             buffer);
 	string fn = "./images/image" + to_string(dc) + ".png";
-	stbi_write_png(fn.c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, 4, buffer, SCREEN_WIDTH * 4);
+	stbi_write_png(fn.c_str(), SCREEN_WIDTH, SCREEN_HEIGHT, 4, buffer, SCREEN_WIDTH * 4);*/
 	double ms_double = tmr->_stop();
 	avg_time += ms_double;
 	fc += 1;
@@ -206,6 +208,7 @@ void readConfig(string filename) {
 	rotation = atoi(line[4].c_str());			
 	ANIM_STEP = atoi(line[5].c_str());			
 	NWORLDS = atoi(line[6].c_str());	
+	SAVE_OUTPUT_FLAG = atoi(line[7].c_str());	
 	VSHADER_PATH =
 	    LIGHTING_ENABLED ? "./shaders/shader.vs" : "./shaders/shader_nl.vs";
 	FSHADER_PATH =
