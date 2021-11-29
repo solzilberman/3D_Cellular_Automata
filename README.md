@@ -15,17 +15,17 @@
 > GLSL >= 3.30 <br />
 > glm [library](http://glm.g-truc.net/0.9.6/index.html) <br />
 
+  
+  
+  
+  
+**Version 2**  
 
-
-
-
-
-
-
-**Version 2**
-
-
-[![3D CA v2.0](https://img.youtube.com/vi/rXlrBCMriqo/0.jpg)](https://www.youtube.com/watch?v=rXlrBCMriqo "3D CA in C++ and OpenGl | Procedural Generation")
+[![3D CA v2.0](https://img.youtube.com/vi/rXlrBCMriqo/0.jpg)](https://www.youtube.com/watch?v=rXlrBCMriqo "3D CA in C++ and OpenGl | Procedural Generation")  
+  
+  
+  
+  
 
 
 
